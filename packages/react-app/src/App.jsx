@@ -1,4 +1,4 @@
-import { Button, Col, Menu, Row } from "antd";
+import { Button, Col, Menu, Row, List, Card } from "antd";
 import "antd/dist/antd.css";
 import {
   useBalance,
@@ -14,6 +14,8 @@ import { Link, Route, Switch, useLocation } from "react-router-dom";
 import "./App.css";
 import {
   Account,
+  Address,
+  AddressInput,
   Contract,
   Faucet,
   GasGauge,
@@ -31,6 +33,7 @@ import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
 import { Home, ExampleUI, Hints, Subgraph } from "./views";
 import { useStaticJsonRPC } from "./hooks";
+import { useEventListener } from "eth-hooks/events/useEventListener";
 
 const { ethers } = require("ethers");
 /*
@@ -167,7 +170,40 @@ function App(props) {
   ]);
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts, "YourContract", "purpose");
+  const balance = useContractReader(readContracts, "BuidlGuidlTabard", "balanceOf", [address]);
+  console.log("🤗 balance:", balance);
+
+  // 📟 Listen for broadcast events
+  const transferEvents = useEventListener(readContracts, "BuidlGuidlTabard", "Transfer", localProvider, 1);
+  console.log("📟 Transfer events:", transferEvents);
+
+  //
+  // 🧠 This effect will update yourCollectibles by polling when your balance changes
+  //
+  const yourBalance = balance && balance.toNumber && balance.toNumber();
+  const [yourCollectibles, setYourCollectibles] = useState();
+
+  useEffect(() => {
+    const updateYourCollectibles = async () => {
+      if (yourBalance) {
+        console.log("updateYourCollectibles");
+        const collectibleUpdate = [];
+        console.log(yourBalance, address);
+        const tokenURI = await readContracts.BuidlGuidlTabard.tokenURI(address);
+        const jsonManifestString = atob(tokenURI.substring(29));
+        console.log("\n\njsonManifestString", jsonManifestString);
+        try {
+          const jsonManifest = JSON.parse(jsonManifestString);
+          console.log("jsonManifest", jsonManifest);
+          collectibleUpdate.push({ id: "0", uri: tokenURI, owner: address, ...jsonManifest });
+        } catch (e) {
+          console.log(e);
+        }
+        setYourCollectibles(collectibleUpdate.reverse());
+      }
+    };
+    updateYourCollectibles();
+  }, [address, yourBalance]);
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -244,6 +280,8 @@ function App(props) {
 
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
+  const [transferToAddresses, setTransferToAddresses] = useState({});
+
   return (
     <div className="App">
       {/* ✏️ Edit the header and change the title to your project name */}
@@ -258,29 +296,84 @@ function App(props) {
       />
       <Menu style={{ textAlign: "center", marginTop: 40 }} selectedKeys={[location.pathname]} mode="horizontal">
         <Menu.Item key="/">
-          <Link to="/">App Home</Link>
+          <Link to="/">BuidlGuidlTabard</Link>
         </Menu.Item>
         <Menu.Item key="/debug">
           <Link to="/debug">Debug Contracts</Link>
-        </Menu.Item>
-        <Menu.Item key="/hints">
-          <Link to="/hints">Hints</Link>
-        </Menu.Item>
-        <Menu.Item key="/exampleui">
-          <Link to="/exampleui">ExampleUI</Link>
-        </Menu.Item>
-        <Menu.Item key="/mainnetdai">
-          <Link to="/mainnetdai">Mainnet DAI</Link>
-        </Menu.Item>
-        <Menu.Item key="/subgraph">
-          <Link to="/subgraph">Subgraph</Link>
         </Menu.Item>
       </Menu>
 
       <Switch>
         <Route exact path="/">
-          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <Home yourLocalBalance={yourLocalBalance} readContracts={readContracts} />
+          {/*
+                🎛 this scaffolding is full of commonly used components
+                this <Contract/> component will automatically parse your ABI
+                and give you a form to interact with it locally
+            */}
+          <div style={{ width: 640, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
+            <List
+              bordered
+              dataSource={yourCollectibles}
+              renderItem={item => {
+                const id = item.id;
+                return (
+                  <List.Item key={id + "_" + item.uri + "_" + item.owner}>
+                    <Card
+                      title={
+                        <div>
+                          <span style={{ fontSize: 18, marginRight: 8 }}>{item.name}</span>
+                        </div>
+                      }
+                    >
+                      <a
+                        href={
+                          "https://opensea.io/assets/" +
+                          (readContracts && readContracts.BuidlGuidlTabard && readContracts.BuidlGuidlTabard.address) +
+                          "/" +
+                          item.id
+                        }
+                        target="_blank"
+                      >
+                        <img
+                          src={item.image}
+                          style={{ width: "400px", height: "400px", border: "1px solid #ddd", borderRadius: "15px" }}
+                        />
+                      </a>
+                      <div>{item.description}</div>
+                    </Card>
+
+                    <div>
+                      owner:{" "}
+                      <Address
+                        address={item.owner}
+                        ensProvider={mainnetProvider}
+                        blockExplorer={blockExplorer}
+                        fontSize={16}
+                      />
+                      <AddressInput
+                        ensProvider={mainnetProvider}
+                        placeholder="transfer to address"
+                        value={transferToAddresses[id]}
+                        onChange={newValue => {
+                          const update = {};
+                          update[id] = newValue;
+                          setTransferToAddresses({ ...transferToAddresses, ...update });
+                        }}
+                      />
+                      <Button
+                        onClick={() => {
+                          console.log("writeContracts", writeContracts);
+                          tx(writeContracts.BuidlGuidlTabard.transferFrom(address, transferToAddresses[id], id));
+                        }}
+                      >
+                        Transfer
+                      </Button>
+                    </div>
+                  </List.Item>
+                );
+              }}
+            />
+          </div>
         </Route>
         <Route exact path="/debug">
           {/*
@@ -290,65 +383,20 @@ function App(props) {
             */}
 
           <Contract
-            name="YourContract"
-            price={price}
+            name="BuidlGuidlTabard"
             signer={userSigner}
             provider={localProvider}
             address={address}
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
           />
-        </Route>
-        <Route path="/hints">
-          <Hints
-            address={address}
-            yourLocalBalance={yourLocalBalance}
-            mainnetProvider={mainnetProvider}
-            price={price}
-          />
-        </Route>
-        <Route path="/exampleui">
-          <ExampleUI
-            address={address}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            yourLocalBalance={yourLocalBalance}
-            price={price}
-            tx={tx}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            purpose={purpose}
-          />
-        </Route>
-        <Route path="/mainnetdai">
           <Contract
-            name="DAI"
-            customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
+            name="SimpleStream"
             signer={userSigner}
-            provider={mainnetProvider}
+            provider={localProvider}
             address={address}
-            blockExplorer="https://etherscan.io/"
+            blockExplorer={blockExplorer}
             contractConfig={contractConfig}
-            chainId={1}
-          />
-          {/*
-            <Contract
-              name="UNI"
-              customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.UNI}
-              signer={userSigner}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer="https://etherscan.io/"
-            />
-            */}
-        </Route>
-        <Route path="/subgraph">
-          <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
           />
         </Route>
       </Switch>
