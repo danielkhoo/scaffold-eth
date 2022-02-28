@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+<style type="text/css"><![CDATA[text { font-family: Monaco , sans-serif; font-size: 21px;} .h1 {font-size: 36px;}]]></style>
+ <rect width="400" height="400" fill="#eeeeee" />
+ <text class="h1" x="60" y="60" >Knight of the</text>
+ <text class="h1" x="90" y="110" >BuidlGuidl</text>
+ <text  x="70" y="230" style="font-size:100px;">🏗️ 🏰</text>
+ <text x="15" y="300">Stream Ξ0.02</text>
+ <text x="210" y="300">Wallet Ξ0.41</text>
+ <text x="15" y="350" style="font-size:28px;">elliottalexander.eth</text>
+ <text x="15" y="380" style="font-size:14px;">0x955a3ec178A76cA2f5cA52fFa88390E341430058</text>
+</svg>
