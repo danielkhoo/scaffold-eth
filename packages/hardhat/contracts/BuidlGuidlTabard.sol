@@ -2,7 +2,6 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 //learn more: https://docs.openzeppelin.com/contracts/3.x/erc721
-
 // GET LISTED ON OPENSEA: https://testnets.opensea.io/get-listed/step-two
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -16,7 +15,7 @@ contract ISimpleStream {
 }
 
 // https://github.com/ensdomains/reverse-records/blob/master/contracts/ReverseRecords.sol
-contract ReverseRecords {
+contract IReverseRecords {
     function getNames(address[] calldata addresses)
         external
         view
@@ -26,8 +25,9 @@ contract ReverseRecords {
 
 contract BuidlGuidlTabard is ERC721 {
     // ENS Reverse Record Contract for address => ENS resolution
-    ReverseRecords ensReverseRecords =
-        ReverseRecords(0x97843608a00e2bbc75ab0C1911387E002565DEDE);
+    IReverseRecords ensReverseRecords =
+        IReverseRecords(0x95401dc811bb5740090279Ba06cfA8fcF6113778);
+    mapping(address => address) public streams;
 
     constructor() ERC721("BuidlGuidl Tabard", "BGV3") {}
 
@@ -35,8 +35,12 @@ contract BuidlGuidlTabard is ERC721 {
         ISimpleStream stream = ISimpleStream(streamAddress);
         require(
             msg.sender == stream.toAddress(),
-            "Stream does connect to your address"
+            "You are not the recipient of the stream"
         );
+
+        streams[msg.sender] = streamAddress;
+
+        // Set the token id to the address of minter
         _mint(msg.sender, uint256(uint160(msg.sender)));
     }
 
@@ -52,64 +56,52 @@ contract BuidlGuidlTabard is ERC721 {
         return _buildTokenURI(id);
     }
 
-    // Converts wei to ether string with 2 decimal places
-    function weiToEtherString(uint256 amountInWei)
-        public
-        pure
-        returns (string memory)
-    {
-        uint256 amountInFinney = amountInWei / 1e15; // 1 finney == 1e15
-        uint256 leftOfDecimal = amountInFinney / 1000;
-        uint256 firstDecimal = (amountInFinney % 1000) / 100;
-        uint256 secondDecimal = ((amountInFinney % 1000) % 100) / 10;
-        return
-            string(
-                abi.encodePacked(
-                    Strings.toString(leftOfDecimal),
-                    ".",
-                    Strings.toString(firstDecimal),
-                    Strings.toString(secondDecimal)
-                )
-            );
-    }
-
     function _buildTokenURI(uint256 id) internal view returns (string memory) {
+        bool minted = _exists(id);
+
+        // Bound address derived from tokenId
         address boundAddress = address(uint160(id));
 
-        // string memory ENSName = lookupENSName(boundAddress);
+        string memory streamBalance = "";
+        if (minted) {
+            // Get stream address, to check it's current balance
+            address streamAddress = streams[boundAddress];
+            ISimpleStream stream = ISimpleStream(streamAddress);
+            streamBalance = string(
+                abi.encodePacked(
+                    unicode'<text x="15" y="300">Stream Ξ',
+                    weiToEtherString(stream.streamBalance()),
+                    "</text>"
+                )
+            );
+        }
 
-        string memory balanceString = weiToEtherString(boundAddress.balance);
-
-        string memory metaSVG = string(
-            abi.encodePacked(
-                '<rect width="400" height="400" fill="#ffffff" />',
-                '<text class="h1" x="60" y="60" >Knight of the</text>',
-                '<text class="h1" x="90" y="110" >BuidlGuidl</text>',
-                unicode'<text x="70" y="230" style="font-size:100px;">🏗️ 🏰</text>',
-                unicode'<text x="15" y="300">Stream Ξ',
-                "0.42",
-                "</text>",
-                unicode'<text x="210" y="300" >Wallet Ξ',
-                balanceString,
-                "</text>",
-                '<text x="15" y="350" style="font-size:28px;"> ',
-                "jadenkore.eth",
-                "</text>",
-                '<text x="15" y="380" id="address" style="font-size:14px;">',
-                addressToString(boundAddress),
-                "</text>"
-            )
-        );
-        bytes memory svg = abi.encodePacked(
-            '<?xml version="1.0" encoding="UTF-8"?>',
-            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">',
-            '<style type="text/css"><![CDATA[text { font-family: Monaco , sans-serif; font-size: 21px;} .h1 {font-size: 36px;}]]></style>',
-            metaSVG,
-            "</svg>"
-        );
         bytes memory image = abi.encodePacked(
             "data:image/svg+xml;base64,",
-            Base64.encode(bytes(svg))
+            Base64.encode(
+                bytes(
+                    abi.encodePacked(
+                        '<?xml version="1.0" encoding="UTF-8"?>',
+                        '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">',
+                        '<style type="text/css"><![CDATA[text { font-family: Monaco , sans-serif; font-size: 21px;} .h1 {font-size: 36px;}]]></style>',
+                        '<rect width="400" height="400" fill="#ffffff" />',
+                        '<text class="h1" x="60" y="60" >Knight of the</text>',
+                        '<text class="h1" x="90" y="110" >BuidlGuidl</text>',
+                        unicode'<text x="70" y="230" style="font-size:100px;">🏗️ 🏰</text>',
+                        streamBalance,
+                        unicode'<text x="210" y="300" >Wallet Ξ',
+                        weiToEtherString(boundAddress.balance),
+                        "</text>",
+                        '<text x="15" y="350" style="font-size:28px;"> ',
+                        lookupENSName(boundAddress),
+                        "</text>",
+                        '<text x="15" y="380" id="address" style="font-size:14px;">0x',
+                        addressToString(boundAddress),
+                        "</text>",
+                        "</svg>"
+                    )
+                )
+            )
         );
         return
             string(
@@ -124,6 +116,24 @@ contract BuidlGuidlTabard is ERC721 {
                             )
                         )
                     )
+                )
+            );
+    }
+
+    // Converts wei to ether string with 2 decimal places
+    function weiToEtherString(uint256 amountInWei)
+        public
+        pure
+        returns (string memory)
+    {
+        uint256 amountInFinney = amountInWei / 1e15; // 1 finney == 1e15
+        return
+            string(
+                abi.encodePacked(
+                    Strings.toString(amountInFinney / 1000), //left of decimal
+                    ".",
+                    Strings.toString((amountInFinney % 1000) / 100), //first decimal
+                    Strings.toString(((amountInFinney % 1000) % 100) / 10) // first decimal
                 )
             );
     }
