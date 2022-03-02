@@ -16,10 +16,10 @@ contract BuidlGuidlTabard is ERC721 {
     // ENS Reverse Record Contract for address => ENS resolution
     // NOTE: Address of ENS Reverse Record Contract differs across testnets/mainnet
     IReverseRecords ensReverseRecords =
-        IReverseRecords(0x196eC7109e127A353B709a20da25052617295F6f);
+        IReverseRecords(0x3671aE578E63FdF66ad4F3E12CC0c0d71Ac7510C);
     mapping(address => address) public streams; // Store individual stream addresses so they can be referenced post-mint
 
-    constructor() ERC721("BuidlGuidl Tabard", "BGV3") {}
+    constructor() ERC721("BuidlGuidl Tabard", "BGT") {}
 
     function mintItem(address streamAddress) public {
         // Minimal check that wallet is the recipient of a Stream
