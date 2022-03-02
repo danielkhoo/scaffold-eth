@@ -56,7 +56,7 @@ const { ethers } = require("ethers");
 */
 
 /// 📡 What chain are your contracts deployed to?
-const initialNetwork = NETWORKS.rinkeby; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const initialNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true;
@@ -181,7 +181,10 @@ function App(props) {
   // 🧠 This effect will update yourCollectibles by polling when your balance changes
   //
   const yourBalance = balance && balance.toNumber && balance.toNumber();
-  const [yourCollectibles, setYourCollectibles] = useState();
+  const [yourCollectibles, setYourCollectibles] = useState([]);
+
+  const [streamAddress, setStreamAddress] = useState();
+  const [tabardGallery, setTabardGallery] = useState([]);
 
   useEffect(() => {
     const updateYourCollectibles = async () => {
@@ -202,7 +205,29 @@ function App(props) {
         setYourCollectibles(collectibleUpdate.reverse());
       }
     };
+    const updateGallery = async () => {
+      if (readContracts.BuidlGuidlTabard) {
+        console.log("updateGallery");
+        //HACK: Hardcoded list of addresses
+        const allMinters = ["0x6C9ea5ab34b32b71358C46D13Db5eE29d76F039f"];
+
+        const galleryUpdate = [];
+        for (let i = 0; i < allMinters.length; i++) {
+          const minterAddress = allMinters[i];
+          const tokenURI = await readContracts.BuidlGuidlTabard.tokenURI(minterAddress);
+          const jsonManifestString = atob(tokenURI.substring(29));
+          try {
+            const jsonManifest = JSON.parse(jsonManifestString);
+            galleryUpdate.push({ id: i, uri: tokenURI, owner: minterAddress, ...jsonManifest });
+          } catch (e) {
+            console.log(e);
+          }
+        }
+        setTabardGallery(galleryUpdate);
+      }
+    };
     updateYourCollectibles();
+    updateGallery();
   }, [address, yourBalance]);
 
   /*
@@ -296,7 +321,10 @@ function App(props) {
       />
       <Menu style={{ textAlign: "center", marginTop: 40 }} selectedKeys={[location.pathname]} mode="horizontal">
         <Menu.Item key="/">
-          <Link to="/">BuidlGuidlTabard</Link>
+          <Link to="/">Your NFT</Link>
+        </Menu.Item>
+        <Menu.Item key="/gallery">
+          <Link to="/gallery">Gallery</Link>
         </Menu.Item>
         <Menu.Item key="/debug">
           <Link to="/debug">Debug Contracts</Link>
@@ -305,74 +333,119 @@ function App(props) {
 
       <Switch>
         <Route exact path="/">
-          {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-          <div style={{ width: 640, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
-            <List
-              bordered
-              dataSource={yourCollectibles}
-              renderItem={item => {
-                const id = item.id;
-                return (
-                  <List.Item key={id + "_" + item.uri + "_" + item.owner}>
-                    <Card
-                      title={
-                        <div>
-                          <span style={{ fontSize: 18, marginRight: 8 }}>{item.name}</span>
-                        </div>
-                      }
-                    >
-                      <a
-                        href={
-                          "https://opensea.io/assets/" +
-                          (readContracts && readContracts.BuidlGuidlTabard && readContracts.BuidlGuidlTabard.address) +
-                          "/" +
-                          item.id
-                        }
-                        target="_blank"
-                      >
-                        <img
-                          src={item.image}
-                          style={{ width: "400px", height: "400px", border: "1px solid #ddd", borderRadius: "15px" }}
-                        />
-                      </a>
-                      <div>{item.description}</div>
-                    </Card>
+          <div style={{ maxWidth: 640, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
+            {yourCollectibles.length === 0 && (
+              <Card title={<h2>Mint UI</h2>} size="large">
+                <div style={{ maxWidth: 400, margin: "auto", fontSize: "18px" }}>
+                  <p>Hello there! Looks like you haven't minted a BuidlGuidl Tabard NFT yet.</p>
 
-                    <div>
-                      owner:{" "}
-                      <Address
-                        address={item.owner}
-                        ensProvider={mainnetProvider}
-                        blockExplorer={blockExplorer}
-                        fontSize={16}
-                      />
-                      <AddressInput
-                        ensProvider={mainnetProvider}
-                        placeholder="transfer to address"
-                        value={transferToAddresses[id]}
-                        onChange={newValue => {
-                          const update = {};
-                          update[id] = newValue;
-                          setTransferToAddresses({ ...transferToAddresses, ...update });
-                        }}
-                      />
-                      <Button
-                        onClick={() => {
-                          console.log("writeContracts", writeContracts);
-                          tx(writeContracts.BuidlGuidlTabard.transferFrom(address, transferToAddresses[id], id));
-                        }}
-                      >
-                        Transfer
-                      </Button>
-                    </div>
-                  </List.Item>
-                );
-              }}
-            />
+                  <p>
+                    If you are <a href="https://buidlguidl.com/builders"> in the BuidlGuidl</a> with a live stream
+                    contract, fill in the stream contract address to mint. Make sure you're using the wallet that is the
+                    recipient of the stream.
+                  </p>
+                  <AddressInput placeholder="stream address" address={streamAddress} onChange={setStreamAddress} />
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      console.log("writeContracts", writeContracts);
+                      tx(writeContracts.BuidlGuidlTabard.mintItem(streamAddress));
+                    }}
+                    style={{ marginTop: 18 }}
+                  >
+                    Mint
+                  </Button>
+                </div>
+              </Card>
+            )}
+            {yourCollectibles.length > 0 && (
+              <List
+                bordered
+                dataSource={yourCollectibles}
+                renderItem={item => {
+                  const id = item.id;
+                  return (
+                    <List.Item key={id + "_" + item.uri + "_" + item.owner}>
+                      <Card title={<h2>Your Tabard </h2>} style={{ margin: "auto", fontSize: "18px" }}>
+                        <a
+                          href={
+                            "https://opensea.io/assets/" +
+                            (readContracts &&
+                              readContracts.BuidlGuidlTabard &&
+                              readContracts.BuidlGuidlTabard.address) +
+                            "/" +
+                            item.id
+                          }
+                          target="_blank"
+                        >
+                          <img
+                            src={item.image}
+                            style={{ width: "360px", height: "360px", border: "1px solid #ddd", borderRadius: "15px" }}
+                          />
+                        </a>
+                        <div style={{ maxWidth: 400, padding: 12 }}>
+                          owner:{" "}
+                          <Address
+                            address={item.owner}
+                            ensProvider={mainnetProvider}
+                            blockExplorer={blockExplorer}
+                            fontSize={16}
+                          />
+                          <div style={{ textAlign: "start" }}>{item.description}</div>
+                        </div>
+                      </Card>
+                    </List.Item>
+                  );
+                }}
+              />
+            )}
+          </div>
+        </Route>
+        <Route exact path="/gallery">
+          <div style={{ maxWidth: 640, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
+            {tabardGallery.length > 0 && (
+              <Card title={<h2>BuidlGuidl NFTs Minted</h2>} size="large">
+                <List
+                  bordered
+                  dataSource={tabardGallery}
+                  renderItem={item => {
+                    const id = item.id;
+                    return (
+                      <>
+                        <div style={{ margin: "auto" }}>
+                          <Card
+                            style={{ margin: "auto", fontSize: "18px" }}
+                            key={id + "_" + item.uri + "_" + item.owner}
+                          >
+                            <a
+                              href={
+                                "https://opensea.io/assets/" +
+                                (readContracts &&
+                                  readContracts.BuidlGuidlTabard &&
+                                  readContracts.BuidlGuidlTabard.address) +
+                                "/" +
+                                item.id
+                              }
+                              target="_blank"
+                            >
+                              <img
+                                src={item.image}
+                                style={{
+                                  width: "360px",
+                                  height: "360px",
+                                  border: "1px solid #ddd",
+                                  borderRadius: "15px",
+                                }}
+                              />
+                            </a>
+                          </Card>
+                        </div>
+                      </>
+                    );
+                  }}
+                />
+              </Card>
+            )}
           </div>
         </Route>
         <Route exact path="/debug">
