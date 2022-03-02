@@ -14,14 +14,16 @@ import "@openzeppelin/contracts/utils/Base64.sol";
  */
 contract BuidlGuidlTabard is ERC721 {
     // ENS Reverse Record Contract for address => ENS resolution
-    // NOTE: Address of ENS Reverse Record Contract different across testnet/mainnet
+    // NOTE: Address of ENS Reverse Record Contract differs across testnets/mainnet
     IReverseRecords ensReverseRecords =
         IReverseRecords(0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6);
-    mapping(address => address) public streams;
+    mapping(address => address) public streams; // Store individual stream addresses so they can be referenced post-mint
 
     constructor() ERC721("BuidlGuidl Tabard", "BGV3") {}
 
     function mintItem(address streamAddress) public {
+        // Minimal check that wallet is the recipient of a Stream
+        // Someone could deploy a decoy stream to bypass this, but it's easier to just join the BuidlGuidl :)
         ISimpleStream stream = ISimpleStream(streamAddress);
         require(
             msg.sender == stream.toAddress(),
@@ -30,7 +32,8 @@ contract BuidlGuidlTabard is ERC721 {
 
         streams[msg.sender] = streamAddress;
 
-        // Set the token id to the address of minter
+        // Set the token id to the address of minter.
+        // Inspired by https://gist.github.com/z0r0z/6ca37df326302b0ec8635b8796a4fdbb
         _mint(msg.sender, uint256(uint160(msg.sender)));
     }
 
@@ -38,13 +41,15 @@ contract BuidlGuidlTabard is ERC721 {
         return _buildTokenURI(id);
     }
 
+    // Constructs the encoded svg string to be returned by tokenURI()
     function _buildTokenURI(uint256 id) internal view returns (string memory) {
         bool minted = _exists(id);
 
-        // Bound address derived from tokenId
+        // Bound address from tokenId
         address boundAddress = address(uint160(id));
 
         string memory streamBalance = "";
+        // Don't include stream in URI until token is minted
         if (minted) {
             // Get stream address, to check it's current balance
             address streamAddress = streams[boundAddress];
