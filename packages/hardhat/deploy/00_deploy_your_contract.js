@@ -17,23 +17,31 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
 
-  await deploy("SimpleStream", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
-    from: deployer,
-    args: [
-      "0x955a3ec178A76cA2f5cA52fFa88390E341430058",
-      ethers.utils.parseEther("0.5"),
-      2592000,
-      false
-    ],
-    log: true,
-  });
+  // await deploy("SimpleStream", {
+  //   // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+  //   from: deployer,
+  //   args: [
+  //     "0x6C9ea5ab34b32b71358C46D13Db5eE29d76F039f",
+  //     ethers.utils.parseEther("0.5"),
+  //     2592000,
+  //     false
+  //   ],
+  //   log: true,
+  // });
 
-  const stream = await ethers.getContract("SimpleStream", deployer);
-  stream.streamDeposit('test', {
-    value: ethers.utils.parseEther("0.5"),
-    gasLimit: 200000,
-  })
+  // const stream = await ethers.getContract("SimpleStream", deployer);
+  // stream.streamDeposit('test', {
+  //   value: ethers.utils.parseEther("0.5"),
+  //   gasLimit: 200000,
+  // })
+
+
+  // await deploy("ReverseRecords", {
+  //   // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+  //   from: deployer,
+  //   // args: [],
+  //   log: true,
+  // });
 
   await deploy("BuidlGuidlTabard", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy

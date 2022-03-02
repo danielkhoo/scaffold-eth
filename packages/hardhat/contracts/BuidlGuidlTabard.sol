@@ -26,7 +26,7 @@ contract IReverseRecords {
 contract BuidlGuidlTabard is ERC721 {
     // ENS Reverse Record Contract for address => ENS resolution
     IReverseRecords ensReverseRecords =
-        IReverseRecords(0x95401dc811bb5740090279Ba06cfA8fcF6113778);
+        IReverseRecords(0x196eC7109e127A353B709a20da25052617295F6f);
     mapping(address => address) public streams;
 
     constructor() ERC721("BuidlGuidl Tabard", "BGV3") {}
@@ -54,6 +54,34 @@ contract BuidlGuidlTabard is ERC721 {
 
     function tokenURI(uint256 id) public view override returns (string memory) {
         return _buildTokenURI(id);
+    }
+
+    function checkStreamBalance(address boundAddress)
+        public
+        view
+        returns (uint256)
+    {
+        address streamAddress = streams[boundAddress];
+        ISimpleStream stream = ISimpleStream(streamAddress);
+        return stream.streamBalance();
+    }
+
+    function checkStreamBalanceText(address boundAddress)
+        public
+        view
+        returns (string memory)
+    {
+        address streamAddress = streams[boundAddress];
+        ISimpleStream stream = ISimpleStream(streamAddress);
+        // return stream.streamBalance();
+        return
+            string(
+                abi.encodePacked(
+                    unicode'<text x="15" y="300">Stream Ξ',
+                    weiToEtherString(stream.streamBalance()),
+                    "</text>"
+                )
+            );
     }
 
     function _buildTokenURI(uint256 id) internal view returns (string memory) {
