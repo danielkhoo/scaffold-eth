@@ -16,7 +16,7 @@ contract BuidlGuidlTabard is ERC721 {
     // ENS Reverse Record Contract for address => ENS resolution
     // NOTE: Address of ENS Reverse Record Contract differs across testnets/mainnet
     IReverseRecords ensReverseRecords =
-        IReverseRecords(0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6);
+        IReverseRecords(0x196eC7109e127A353B709a20da25052617295F6f);
     mapping(address => address) public streams; // Store individual stream addresses so they can be referenced post-mint
 
     constructor() ERC721("BuidlGuidl Tabard", "BGV3") {}
@@ -99,7 +99,7 @@ contract BuidlGuidlTabard is ERC721 {
                             abi.encodePacked(
                                 '{"name":"BuidlGuidl Tabard", "image":"',
                                 image,
-                                unicode'", "description": "This NFT marks the bound address as a member of the BuidlGuidl. The image is a fully-onchain dynamic SVG reflecting the current balances of the bound wallet and their individual work stream."}'
+                                unicode'", "description": "This NFT marks the bound address as a member of the BuidlGuidl. The image is a fully-onchain dynamic SVG reflecting current balances of the bound wallet and builder work stream."}'
                             )
                         )
                     )
