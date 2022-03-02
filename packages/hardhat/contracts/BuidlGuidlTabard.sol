@@ -1,32 +1,22 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-//learn more: https://docs.openzeppelin.com/contracts/3.x/erc721
-// GET LISTED ON OPENSEA: https://testnets.opensea.io/get-listed/step-two
-
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
 
-//https://github.com/austintgriffith/scaffold-eth/tree/simple-stream
-contract ISimpleStream {
-    address public toAddress;
-
-    function streamBalance() public view returns (uint256) {}
-}
-
-// https://github.com/ensdomains/reverse-records/blob/master/contracts/ReverseRecords.sol
-contract IReverseRecords {
-    function getNames(address[] calldata addresses)
-        external
-        view
-        returns (string[] memory r)
-    {}
-}
-
+/**
+ * @title BuidlGuidl Tabard
+ * @author Daniel Khoo
+ * @notice A dynamic NFT for BuidlGuidl members. Image is a fully-onchain SVG with tied to the bound address i.e. the minter.
+ * Dynamic elements are: ENS reverse resolution, stream and wallet balance updates.
+ * @dev Mintable if wallet is toAddress of a BuidlGuidl stream.
+ */
 contract BuidlGuidlTabard is ERC721 {
     // ENS Reverse Record Contract for address => ENS resolution
+    // NOTE: Address of ENS Reverse Record Contract different across testnet/mainnet
     IReverseRecords ensReverseRecords =
-        IReverseRecords(0x196eC7109e127A353B709a20da25052617295F6f);
+        IReverseRecords(0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6);
     mapping(address => address) public streams;
 
     constructor() ERC721("BuidlGuidl Tabard", "BGV3") {}
@@ -44,44 +34,8 @@ contract BuidlGuidlTabard is ERC721 {
         _mint(msg.sender, uint256(uint160(msg.sender)));
     }
 
-    // Checks ENS reverse records if address has an ens name, else returns blank string
-    function lookupENSName(address addr) public view returns (string memory) {
-        address[] memory t = new address[](1);
-        t[0] = addr;
-        string[] memory results = ensReverseRecords.getNames(t);
-        return results[0];
-    }
-
     function tokenURI(uint256 id) public view override returns (string memory) {
         return _buildTokenURI(id);
-    }
-
-    function checkStreamBalance(address boundAddress)
-        public
-        view
-        returns (uint256)
-    {
-        address streamAddress = streams[boundAddress];
-        ISimpleStream stream = ISimpleStream(streamAddress);
-        return stream.streamBalance();
-    }
-
-    function checkStreamBalanceText(address boundAddress)
-        public
-        view
-        returns (string memory)
-    {
-        address streamAddress = streams[boundAddress];
-        ISimpleStream stream = ISimpleStream(streamAddress);
-        // return stream.streamBalance();
-        return
-            string(
-                abi.encodePacked(
-                    unicode'<text x="15" y="300">Stream Ξ',
-                    weiToEtherString(stream.streamBalance()),
-                    "</text>"
-                )
-            );
     }
 
     function _buildTokenURI(uint256 id) internal view returns (string memory) {
@@ -97,7 +51,7 @@ contract BuidlGuidlTabard is ERC721 {
             ISimpleStream stream = ISimpleStream(streamAddress);
             streamBalance = string(
                 abi.encodePacked(
-                    unicode'<text x="15" y="300">Stream Ξ',
+                    unicode'<text x="20" y="305">Stream Ξ',
                     weiToEtherString(stream.streamBalance()),
                     "</text>"
                 )
@@ -111,19 +65,19 @@ contract BuidlGuidlTabard is ERC721 {
                     abi.encodePacked(
                         '<?xml version="1.0" encoding="UTF-8"?>',
                         '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">',
-                        '<style type="text/css"><![CDATA[text { font-family: Monaco , sans-serif; font-size: 21px;} .h1 {font-size: 36px;}]]></style>',
+                        '<style type="text/css"><![CDATA[text { font-family: monospace; font-size: 21px;} .h1 {font-size: 40px; font-weight: 600;}]]></style>',
                         '<rect width="400" height="400" fill="#ffffff" />',
-                        '<text class="h1" x="60" y="60" >Knight of the</text>',
-                        '<text class="h1" x="90" y="110" >BuidlGuidl</text>',
-                        unicode'<text x="70" y="230" style="font-size:100px;">🏗️ 🏰</text>',
+                        '<text class="h1" x="50" y="70">Knight of the</text>',
+                        '<text class="h1" x="80" y="120" >BuidlGuidl</text>',
+                        unicode'<text x="70" y="240" style="font-size:100px;">🏗️ 🏰</text>',
                         streamBalance,
-                        unicode'<text x="210" y="300" >Wallet Ξ',
+                        unicode'<text x="210" y="305">Wallet Ξ',
                         weiToEtherString(boundAddress.balance),
                         "</text>",
-                        '<text x="15" y="350" style="font-size:28px;"> ',
+                        '<text x="20" y="350" style="font-size:28px;"> ',
                         lookupENSName(boundAddress),
                         "</text>",
-                        '<text x="15" y="380" id="address" style="font-size:14px;">0x',
+                        '<text x="20" y="380" style="font-size:14px;">0x',
                         addressToString(boundAddress),
                         "</text>",
                         "</svg>"
@@ -140,7 +94,7 @@ contract BuidlGuidlTabard is ERC721 {
                             abi.encodePacked(
                                 '{"name":"BuidlGuidl Tabard", "image":"',
                                 image,
-                                '", "description": "This NFT marks the bound address as a member of the BuidlGuidl."}'
+                                unicode'", "description": "This NFT marks the bound address as a member of the BuidlGuidl. The image is a fully-onchain dynamic SVG reflecting the current balances of the bound wallet and their individual work stream."}'
                             )
                         )
                     )
@@ -148,7 +102,17 @@ contract BuidlGuidlTabard is ERC721 {
             );
     }
 
-    // Converts wei to ether string with 2 decimal places
+    /* ========== HELPER FUNCTIONS ========== */
+
+    /// @notice Checks ENS reverse records if address has an ens name, else returns blank string
+    function lookupENSName(address addr) public view returns (string memory) {
+        address[] memory t = new address[](1);
+        t[0] = addr;
+        string[] memory results = ensReverseRecords.getNames(t);
+        return results[0];
+    }
+
+    /// @notice  Converts wei to ether string with 2 decimal places
     function weiToEtherString(uint256 amountInWei)
         public
         pure
@@ -184,72 +148,22 @@ contract BuidlGuidlTabard is ERC721 {
     }
 }
 
-/// @notice Provides a function for encoding some bytes in base64.
-/// @author Modified from Brecht Devos (https://github.com/Brechtpd/base64/blob/main/base64.sol)
-/// License-Identifier: MIT
-library Base64 {
-    bytes internal constant TABLE =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+/* ========== EXTERNAL CONTRACT INTERFACES ========== */
+/// @notice Minimal contract interfaces for dynamic reading of data for SVG
 
-    /// @dev encodes some bytes to the base64 representation
-    function encode(bytes memory data) internal pure returns (string memory) {
-        uint256 len = data.length;
-        if (len == 0) return "";
+/// @notice SimpleStream that each buidlguidl member has
+/// https://github.com/scaffold-eth/scaffold-eth/blob/simple-stream/packages/hardhat/contracts/SimpleStream.sol
+interface ISimpleStream {
+    function toAddress() external view returns (address);
 
-        // multiply by 4/3 rounded up
-        uint256 encodedLen = 4 * ((len + 2) / 3);
+    function streamBalance() external view returns (uint256);
+}
 
-        // Add some extra buffer at the end
-        bytes memory result = new bytes(encodedLen + 32);
-
-        bytes memory table = TABLE;
-
-        assembly {
-            let tablePtr := add(table, 1)
-            let resultPtr := add(result, 32)
-
-            for {
-                let i := 0
-            } lt(i, len) {
-
-            } {
-                i := add(i, 3)
-                let input := and(mload(add(data, i)), 0xffffff)
-
-                let out := mload(add(tablePtr, and(shr(18, input), 0x3F)))
-                out := shl(8, out)
-                out := add(
-                    out,
-                    and(mload(add(tablePtr, and(shr(12, input), 0x3F))), 0xFF)
-                )
-                out := shl(8, out)
-                out := add(
-                    out,
-                    and(mload(add(tablePtr, and(shr(6, input), 0x3F))), 0xFF)
-                )
-                out := shl(8, out)
-                out := add(
-                    out,
-                    and(mload(add(tablePtr, and(input, 0x3F))), 0xFF)
-                )
-                out := shl(224, out)
-
-                mstore(resultPtr, out)
-
-                resultPtr := add(resultPtr, 4)
-            }
-
-            switch mod(len, 3)
-            case 1 {
-                mstore(sub(resultPtr, 2), shl(240, 0x3d3d))
-            }
-            case 2 {
-                mstore(sub(resultPtr, 1), shl(248, 0x3d))
-            }
-
-            mstore(result, encodedLen)
-        }
-
-        return string(result);
-    }
+/// @notice ENS reverse record contract for resolving address to ENS name
+/// https://github.com/ensdomains/reverse-records/blob/master/contracts/ReverseRecords.sol
+interface IReverseRecords {
+    function getNames(address[] calldata addresses)
+        external
+        view
+        returns (string[] memory r);
 }
