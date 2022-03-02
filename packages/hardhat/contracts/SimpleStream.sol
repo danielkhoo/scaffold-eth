@@ -32,7 +32,7 @@ contract SimpleStream {
         if (block.timestamp - last > frequency) {
             return cap;
         }
-        return (cap * (block.timestamp - last)) / frequency;
+        return cap;
     }
 
     function streamWithdraw(uint256 amount, string memory reason) public {

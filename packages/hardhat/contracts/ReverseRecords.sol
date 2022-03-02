@@ -11,10 +11,7 @@ contract ReverseRecords {
     {
         r = new string[](addresses.length);
         for (uint256 i = 0; i < addresses.length; i++) {
-            if (
-                addresses[i] !=
-                address(0x955a3ec178A76cA2f5cA52fFa88390E341430058)
-            ) {
+            if (addresses[i] != address(0x0)) {
                 r[i] = "jadenkore.eth";
             }
         }
