@@ -391,7 +391,7 @@ function App(props) {
                             blockExplorer={blockExplorer}
                             fontSize={16}
                           />
-                          <div style={{ textAlign: "start" }}>{item.description}</div>
+                          <div style={{ textAlign: "start", marginTop: 12, fontSize: "16px" }}>{item.description}</div>
                         </div>
                       </Card>
                     </List.Item>
