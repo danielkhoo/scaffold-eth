@@ -212,16 +212,22 @@ function App(props) {
         const allMinters = ["0x6C9ea5ab34b32b71358C46D13Db5eE29d76F039f"];
 
         const galleryUpdate = [];
-        for (let i = 0; i < allMinters.length; i++) {
-          const minterAddress = allMinters[i];
-          const tokenURI = await readContracts.BuidlGuidlTabard.tokenURI(minterAddress);
-          const jsonManifestString = atob(tokenURI.substring(29));
-          try {
-            const jsonManifest = JSON.parse(jsonManifestString);
-            galleryUpdate.push({ id: i, uri: tokenURI, owner: minterAddress, ...jsonManifest });
-          } catch (e) {
-            console.log(e);
-          }
+
+        try {
+          const tokenURIs = await Promise.all(
+            allMinters.map(minterAddress => readContracts.BuidlGuidlTabard.tokenURI(minterAddress)),
+          );
+
+          tokenURIs.forEach((tokenURI, i) => {
+            try {
+              const jsonManifest = JSON.parse(atob(tokenURI.substring(29)));
+              galleryUpdate.push({ id: i, uri: tokenURI, ...jsonManifest });
+            } catch (e) {
+              console.log(e);
+            }
+          });
+        } catch (e) {
+          console.log(e);
         }
         setTabardGallery(galleryUpdate);
       }
@@ -324,7 +330,7 @@ function App(props) {
           <Link to="/">Your NFT</Link>
         </Menu.Item>
         <Menu.Item key="/gallery">
-          <Link to="/gallery">Gallery</Link>
+          <Link to="/gallery">Knights of the BuidlGuidl</Link>
         </Menu.Item>
         <Menu.Item key="/debug">
           <Link to="/debug">Debug Contracts</Link>
@@ -335,7 +341,7 @@ function App(props) {
         <Route exact path="/">
           <div style={{ maxWidth: 640, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
             {yourCollectibles.length === 0 && (
-              <Card title={<h2>Mint UI</h2>} size="large">
+              <Card title={<h2>Mint your NFT</h2>} size="large">
                 <div style={{ maxWidth: 400, margin: "auto", fontSize: "18px" }}>
                   <p>Hello there! Looks like you haven't minted a BuidlGuidl Tabard NFT yet.</p>
 
@@ -355,18 +361,78 @@ function App(props) {
                   >
                     Mint
                   </Button>
+                  <p style={{ marginTop: 36 }}>
+                    Each token is bound at mint to the builder's wallet and stream. The stream balance, wallet balance
+                    and ENS are dynamically rendered and will update overtime.{" "}
+                    <Link to="/gallery">Check out some examples</Link>
+                  </p>
                 </div>
               </Card>
             )}
             {yourCollectibles.length > 0 && (
-              <List
-                bordered
-                dataSource={yourCollectibles}
-                renderItem={item => {
-                  const id = item.id;
+              <Card size="large">
+                {yourCollectibles.map(item => {
                   return (
-                    <List.Item key={id + "_" + item.uri + "_" + item.owner}>
-                      <Card title={<h2>Your Tabard </h2>} style={{ margin: "auto", fontSize: "18px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <a
+                        href={
+                          "https://opensea.io/assets/" +
+                          (readContracts && readContracts.BuidlGuidlTabard && readContracts.BuidlGuidlTabard.address) +
+                          "/" +
+                          item.id
+                        }
+                        target="_blank"
+                      >
+                        <img
+                          src={item.image}
+                          style={{ width: "360px", height: "360px", border: "1px solid #ddd", borderRadius: "15px" }}
+                        />
+                      </a>
+                      <div style={{ maxWidth: 400, padding: 12 }}>
+                        owner:{" "}
+                        <Address
+                          address={item.owner}
+                          ensProvider={mainnetProvider}
+                          blockExplorer={blockExplorer}
+                          fontSize={16}
+                        />
+                        <div style={{ textAlign: "start", marginTop: 12, fontSize: "16px" }}>{item.description}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </Card>
+              // <List
+              //   bordered
+              //   dataSource={yourCollectibles}
+              //   renderItem={item => {
+              //     const id = item.id;
+              //     return (
+              //       <List.Item key={id + "_" + item.uri + "_" + item.owner}>
+
+              //       </List.Item>
+              //     );
+              //   }}
+              // />
+            )}
+          </div>
+        </Route>
+        <Route exact path="/gallery">
+          <div style={{ maxWidth: 720, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
+            {tabardGallery.length > 0 && (
+              <Card title={<h2>Knights of the BuidlGuidl</h2>} size="large">
+                <Row gutter={[16, 16]}>
+                  {tabardGallery.map(item => {
+                    const id = item.id;
+                    return (
+                      <Col span={[12, 24]}>
                         <a
                           href={
                             "https://opensea.io/assets/" +
@@ -380,70 +446,18 @@ function App(props) {
                         >
                           <img
                             src={item.image}
-                            style={{ width: "360px", height: "360px", border: "1px solid #ddd", borderRadius: "15px" }}
+                            style={{
+                              width: "320px",
+                              height: "320px",
+                              border: "1px solid #ddd",
+                              borderRadius: "15px",
+                            }}
                           />
                         </a>
-                        <div style={{ maxWidth: 400, padding: 12 }}>
-                          owner:{" "}
-                          <Address
-                            address={item.owner}
-                            ensProvider={mainnetProvider}
-                            blockExplorer={blockExplorer}
-                            fontSize={16}
-                          />
-                          <div style={{ textAlign: "start", marginTop: 12, fontSize: "16px" }}>{item.description}</div>
-                        </div>
-                      </Card>
-                    </List.Item>
-                  );
-                }}
-              />
-            )}
-          </div>
-        </Route>
-        <Route exact path="/gallery">
-          <div style={{ maxWidth: 640, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
-            {tabardGallery.length > 0 && (
-              <Card title={<h2>BuidlGuidl NFTs Minted</h2>} size="large">
-                <List
-                  bordered
-                  dataSource={tabardGallery}
-                  renderItem={item => {
-                    const id = item.id;
-                    return (
-                      <>
-                        <div style={{ margin: "auto" }}>
-                          <Card
-                            style={{ margin: "auto", fontSize: "18px" }}
-                            key={id + "_" + item.uri + "_" + item.owner}
-                          >
-                            <a
-                              href={
-                                "https://opensea.io/assets/" +
-                                (readContracts &&
-                                  readContracts.BuidlGuidlTabard &&
-                                  readContracts.BuidlGuidlTabard.address) +
-                                "/" +
-                                item.id
-                              }
-                              target="_blank"
-                            >
-                              <img
-                                src={item.image}
-                                style={{
-                                  width: "360px",
-                                  height: "360px",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "15px",
-                                }}
-                              />
-                            </a>
-                          </Card>
-                        </div>
-                      </>
+                      </Col>
                     );
-                  }}
-                />
+                  })}
+                </Row>
               </Card>
             )}
           </div>
