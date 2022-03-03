@@ -381,15 +381,7 @@ function App(props) {
                         alignItems: "center",
                       }}
                     >
-                      <a
-                        href={
-                          "https://opensea.io/assets/" +
-                          (readContracts && readContracts.BuidlGuidlTabard && readContracts.BuidlGuidlTabard.address) +
-                          "/" +
-                          item.id
-                        }
-                        target="_blank"
-                      >
+                      <a href={"https://opensea.io/collection/buidlguidl-tabard"} target="_blank">
                         <img
                           src={item.image}
                           style={{ width: "360px", height: "360px", border: "1px solid #ddd", borderRadius: "15px" }}
@@ -433,17 +425,7 @@ function App(props) {
                     const id = item.id;
                     return (
                       <Col span={[12, 24]}>
-                        <a
-                          href={
-                            "https://opensea.io/assets/" +
-                            (readContracts &&
-                              readContracts.BuidlGuidlTabard &&
-                              readContracts.BuidlGuidlTabard.address) +
-                            "/" +
-                            item.id
-                          }
-                          target="_blank"
-                        >
+                        <a href={"https://opensea.io/collection/buidlguidl-tabard"} target="_blank">
                           <img
                             src={item.image}
                             style={{
