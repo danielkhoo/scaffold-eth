@@ -209,7 +209,13 @@ function App(props) {
       if (readContracts.BuidlGuidlTabard) {
         console.log("updateGallery");
         //HACK: Hardcoded list of addresses
-        const allMinters = ["0x6C9ea5ab34b32b71358C46D13Db5eE29d76F039f"];
+        const allMinters = [
+          "0x6C9ea5ab34b32b71358C46D13Db5eE29d76F039f",
+          "0xA4ca1b15fE81F57cb2d3f686c7B13309906cd37B",
+          "0x34aA3F359A9D614239015126635CE7732c18fDF3",
+          "0x7C2F9E77CFB36Fc90bc8296C0cebbcd89E8D1981",
+          "0x38B2bAC6431604dFfEc17a1E6Adc649a9Ea0eFba",
+        ];
 
         const galleryUpdate = [];
 
