@@ -215,6 +215,8 @@ function App(props) {
           "0x34aA3F359A9D614239015126635CE7732c18fDF3",
           "0x7C2F9E77CFB36Fc90bc8296C0cebbcd89E8D1981",
           "0x38B2bAC6431604dFfEc17a1E6Adc649a9Ea0eFba",
+          "0x807a1752402D21400D555e1CD7f175566088b955",
+          "0x9E67029403675Ee18777Ed38F9C1C5c75F7B34f2",
         ];
 
         const galleryUpdate = [];
