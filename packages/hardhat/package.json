@@ -30,7 +30,7 @@
   },
   "scripts": {
     "chain": "hardhat node --network hardhat --no-deploy",
-    "fork": "hardhat node --network hardhat --no-deploy --fork https://mainnet.infura.io/v3/0381915c632140b78efa49ff3f94ac0c",
+    "fork": "hardhat node --network hardhat --no-deploy --fork https://eth-mainnet.alchemyapi.io/v2/jl_JV7hc-jUtqVvGq6904gZPsLyTfpb3",
     "test": "hardhat test --network hardhat",
     "compile": "hardhat compile",
     "deploy": "hardhat deploy --export-all ../react-app/src/contracts/hardhat_contracts.json",
