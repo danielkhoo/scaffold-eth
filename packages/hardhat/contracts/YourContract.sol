@@ -1,27 +1,57 @@
 pragma solidity >=0.8.0 <0.9.0;
 //SPDX-License-Identifier: MIT
 
-import "hardhat/console.sol";
-// import "@openzeppelin/contracts/access/Ownable.sol"; 
-// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract YourContract {
+contract MetaMultiSigWallet is Ownable {
+    using ECDSA for bytes32;
 
-  event SetPurpose(address sender, string purpose);
+    uint256 public nonce;
+    string public purpose = "hello there";
 
-  string public purpose = "Building Unstoppable Apps!!!";
+    function setPurpose(string memory newPurpose) public {
+        purpose = newPurpose;
+    }
 
-  constructor() payable {
-    // what should we do on deploy?
-  }
+    function executeTransaction(
+        address payable to,
+        uint256 value,
+        bytes memory data,
+        bytes memory signature
+    ) public returns (bytes memory) {
+        bytes32 txnHash = getTransactionHash(nonce, to, value, data);
+        nonce++;
 
-  function setPurpose(string memory newPurpose) public {
-      purpose = newPurpose;
-      console.log(msg.sender,"set purpose to",purpose);
-      emit SetPurpose(msg.sender, purpose);
-  }
+        address signer = recover(txnHash, signature);
+        require(signer == owner(), "SIGNER MUST BE OWNER");
 
-  // to support receiving ETH by default
-  receive() external payable {}
-  fallback() external payable {}
+        (bool success, bytes memory result) = to.call{value: value}(data);
+        require(success, "executeTransaction: tx failed");
+
+        return result;
+    }
+
+    function getTransactionHash(
+        uint256 _nonce,
+        address to,
+        uint256 value,
+        bytes memory data
+    ) public view returns (bytes32) {
+        return
+            keccak256(abi.encodePacked(address(this), _nonce, to, value, data));
+    }
+
+    function recover(bytes32 hash, bytes memory signature)
+        public
+        pure
+        returns (address)
+    {
+        return hash.toEthSignedMessageHash().recover(signature);
+    }
+
+    // to support receiving ETH by default
+    receive() external payable {}
+
+    fallback() external payable {}
 }
