@@ -7,6 +7,7 @@ import { parseEther, formatEther } from "@ethersproject/units";
 
 const TransactionListItem = function ({
   item,
+  rawTxn,
   mainnetProvider,
   blockExplorer,
   price,
@@ -27,7 +28,17 @@ const TransactionListItem = function ({
 
   console.log("🔥🔥🔥🔥", item);
   const txnData = item;
-
+  try {
+    console.log("\n\n", rawTxn, "\n\n");
+    rawTxn.getTransaction().then(res => {
+      console.log(res);
+      const test = readContracts[contractName].interface.parseTransaction(res);
+      console.log(test);
+    });
+    // console.log("\n\n", test, "\n\n");
+  } catch (error) {
+    console.log("ERROR", error);
+  }
   return (
     <>
       <TransactionDetailsModal
@@ -57,7 +68,7 @@ const TransactionListItem = function ({
             </p>
             <p>
               <b>Addressed to :&nbsp;</b>
-              {txnData.functionArgs[0]}
+              {/* {txnData.functionArgs[0]} */}
             </p>
           </div>
           {<b style={{ padding: 16 }}>#{typeof item.nonce === "number" ? item.nonce : item.nonce.toNumber()}</b>}

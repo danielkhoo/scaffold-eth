@@ -35,6 +35,7 @@ import Owners from "./views/Owners";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import CreateTransaction from "./views/CreateTransaction";
 import Transactions from "./views/Transactions";
+import FrontPage from "./views/FrontPage";
 
 const { ethers } = require("ethers");
 /*
@@ -171,6 +172,16 @@ function App(props) {
   ]);
 
   const contractName = "MetaMultiSigWallet";
+
+  const executeTransactionEvents = useEventListener(
+    readContracts,
+    contractName,
+    "ExecuteTransaction",
+    localProvider,
+    1,
+  );
+  if (DEBUG) console.log("📟 executeTransactionEvents:", executeTransactionEvents);
+
   const isOwner = useContractReader(readContracts, contractName, "isOwner", [address]);
   if (DEBUG) console.log("🤗 isOwner (" + address + "):", isOwner);
 
@@ -268,7 +279,7 @@ function App(props) {
       />
       <Menu style={{ textAlign: "center", marginTop: 40 }} selectedKeys={[location.pathname]} mode="horizontal">
         <Menu.Item key="/">
-          <Link to="/">App Home</Link>
+          <Link to="/">MultiSig</Link>
         </Menu.Item>
         <Menu.Item key="/owners">
           <Link to="/owners">Owners</Link>
@@ -286,8 +297,15 @@ function App(props) {
 
       <Switch>
         <Route exact path="/">
-          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <Home yourLocalBalance={yourLocalBalance} readContracts={readContracts} />
+          <FrontPage
+            executeTransactionEvents={executeTransactionEvents}
+            contractName={contractName}
+            localProvider={localProvider}
+            readContracts={readContracts}
+            price={price}
+            mainnetProvider={mainnetProvider}
+            blockExplorer={blockExplorer}
+          />
         </Route>
         <Route exact path="/owners">
           <Owners

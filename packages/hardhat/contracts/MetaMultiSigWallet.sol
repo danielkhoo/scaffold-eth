@@ -6,6 +6,16 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 contract MetaMultiSigWallet {
     using ECDSA for bytes32;
 
+    event Deposit(address indexed sender, uint256 amount, uint256 balance);
+    event ExecuteTransaction(
+        address indexed owner,
+        address payable to,
+        uint256 value,
+        bytes data,
+        uint256 nonce,
+        bytes32 hash,
+        bytes result
+    );
     event Signer(address indexed owner, bool added);
     mapping(address => bool) public isSigner;
     uint256 public signaturesRequired;
@@ -110,6 +120,15 @@ contract MetaMultiSigWallet {
         (bool success, bytes memory result) = to.call{value: value}(data);
         require(success, "executeTransaction: tx failed");
 
+        emit ExecuteTransaction(
+            msg.sender,
+            to,
+            value,
+            data,
+            nonce - 1,
+            txnHash,
+            result
+        );
         return result;
     }
 
@@ -148,7 +167,7 @@ contract MetaMultiSigWallet {
     }
 
     // to support receiving ETH by default
-    receive() external payable {}
-
-    fallback() external payable {}
+    receive() external payable {
+        emit Deposit(msg.sender, msg.value, address(this).balance);
+    }
 }
