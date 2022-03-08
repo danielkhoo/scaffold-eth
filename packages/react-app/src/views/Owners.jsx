@@ -43,11 +43,16 @@ export default function Owners({
         style={{ maxWidth: 400, margin: "auto", marginTop: 32 }}
         bordered
         dataSource={ownerEvents}
-        renderItem={item => {
+        renderItem={(item, i) => {
           return (
-            <List.Item key={"owner_" + item[0]}>
-              <Address address={item[0]} ensProvider={mainnetProvider} blockExplorer={blockExplorer} fontSize={32} />
-              <div style={{ padding: 16 }}>{item[1] ? "👍" : "👎"}</div>
+            <List.Item key={"owner_" + i}>
+              <Address
+                address={item.args[0]}
+                ensProvider={mainnetProvider}
+                blockExplorer={blockExplorer}
+                fontSize={32}
+              />
+              <div style={{ padding: 16 }}>{item.args[1] ? "👍" : "👎"}</div>
             </List.Item>
           );
         }}

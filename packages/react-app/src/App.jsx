@@ -178,7 +178,7 @@ function App(props) {
   const nonce = useContractReader(readContracts, contractName, "nonce");
   if (DEBUG) console.log("# nonce:", nonce);
 
-  const ownerEvents = useEventListener(readContracts, contractName, "Owner", localProvider, 1);
+  const ownerEvents = useEventListener(readContracts, contractName, "Signer", localProvider, 1);
   if (DEBUG) console.log("📟 ownerEvents:", ownerEvents);
 
   const signaturesRequired = useContractReader(readContracts, contractName, "signaturesRequired");
