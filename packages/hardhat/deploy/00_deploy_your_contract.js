@@ -20,14 +20,13 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   await deploy("MetaMultiSigWallet", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
-    // args: [ "Hello", ethers.utils.parseEther("1.5") ],
+    args: [chainId, ["0x955a3ec178A76cA2f5cA52fFa88390E341430058"], 1],
     log: true,
     waitConfirmations: 5,
   });
 
   // Getting a previously deployed contract
   const yourContract = await ethers.getContract("MetaMultiSigWallet", deployer);
-  await yourContract.transferOwnership("0x955a3ec178A76cA2f5cA52fFa88390E341430058");
 
   /*  await YourContract.setPurpose("Hello");
   

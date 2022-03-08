@@ -34,6 +34,7 @@ import { useStaticJsonRPC } from "./hooks";
 import Owners from "./views/Owners";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import CreateTransaction from "./views/CreateTransaction";
+import Transactions from "./views/Transactions";
 
 const { ethers } = require("ethers");
 /*
@@ -275,6 +276,9 @@ function App(props) {
         <Menu.Item key="/create">
           <Link to="/create">Create</Link>
         </Menu.Item>
+        <Menu.Item>
+          <Link to="/pool">Pool</Link>
+        </Menu.Item>
         <Menu.Item key="/debug">
           <Link to="/debug">Debug Contracts</Link>
         </Menu.Item>
@@ -315,6 +319,23 @@ function App(props) {
             tx={tx}
             writeContracts={writeContracts}
             readContracts={readContracts}
+          />
+        </Route>
+        <Route path="/pool">
+          <Transactions
+            contractName={contractName}
+            address={address}
+            userProvider={userSigner}
+            mainnetProvider={mainnetProvider}
+            localProvider={localProvider}
+            yourLocalBalance={yourLocalBalance}
+            price={price}
+            tx={tx}
+            writeContracts={writeContracts}
+            readContracts={readContracts}
+            blockExplorer={blockExplorer}
+            nonce={nonce}
+            signaturesRequired={signaturesRequired}
           />
         </Route>
         <Route exact path="/debug">

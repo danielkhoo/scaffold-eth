@@ -227,11 +227,7 @@ export default function CreateTransaction({
 
               if (isOwner) {
                 console.log(newOwner, newSignaturesRequired);
-                const FIREBASE_URL =
-                  "https://jadenkore-prototyping-default-rtdb.asia-southeast1.firebasedatabase.app/multisig";
-                const multisigKey = `${readContracts[contractName].address}_${localProvider._network.chainId}`;
                 const txData = {
-                  key: multisigKey,
                   functionSignature: methodName,
                   functionArgs: [newOwner, newSignaturesRequired],
                   nonce: nonce.toNumber(),
@@ -244,18 +240,12 @@ export default function CreateTransaction({
                 };
                 console.log(txData);
 
-                // Save to Firebase
-                const res = await axios.get(`${FIREBASE_URL}/${multisigKey}/${newHash}`, txData);
+                // Save update
+                await writeContracts[contractName].createTransaction(JSON.stringify(txData));
 
-                // IF SIG IS VALUE ETC END TO SERVER AND SERVER VERIFIES SIG IS RIGHT AND IS SIGNER BEFORE ADDING TY
-                // console.log("RESULT", res.data);
-                // setTimeout(() => {
-                //   history.push("/pool");
-                // }, 2777);
-                // setResult(res.data.hash);
-                // setTo();
-                // setAmount("0");
-                // setData("0x");
+                setTimeout(() => {
+                  history.push("/pool");
+                }, 2777);
               } else {
                 console.log("ERROR, NOT OWNER.");
                 setResult("ERROR, NOT OWNER.");
