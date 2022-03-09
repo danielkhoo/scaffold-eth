@@ -172,7 +172,6 @@ export default function CreateTransaction({
                 const txData = {
                   functionSignature: methodName,
                   functionArgs: [newOwner, newSignaturesRequired],
-                  decodedData: decodedDataState,
                   nonce: nonce.toNumber(),
                   to,
                   amount,
