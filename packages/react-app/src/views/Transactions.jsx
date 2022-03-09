@@ -30,6 +30,7 @@ export default function Transactions({
   useEffect(() => {
     async function getTransactions() {
       if (readContracts[contractName]) {
+        setTransactions([]);
         const currentNonce = nonce ? nonce.toNumber() : 0;
         const pendingTransaction = await readContracts[contractName].transactions(currentNonce);
 

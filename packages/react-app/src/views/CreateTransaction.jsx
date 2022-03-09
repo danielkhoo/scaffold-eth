@@ -12,9 +12,9 @@ const { ethers } = require("ethers");
 const axios = require("axios");
 
 export default function CreateTransaction({
-  poolServerUrl,
   contractName,
   address,
+  setRoute,
   userProvider,
   mainnetProvider,
   localProvider,
@@ -36,11 +36,11 @@ export default function CreateTransaction({
 
   const [customNonce, setCustomNonce] = useState();
   const [to, setTo] = useLocalStorage("to");
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useLocalStorage("amount", "0");
   const [data, setData] = useLocalStorage("data", "0x");
   const [isCreateTxnEnabled, setCreateTxnEnabled] = useState(true);
   const [decodedDataState, setDecodedData] = useState();
-  const [methodName, setMethodName] = useLocalStorage("methodName", "addSigner");
+  const [methodName, setMethodName] = useState();
   const [newOwner, setNewOwner] = useLocalStorage("newOwner");
   const [newSignaturesRequired, setNewSignaturesRequired] = useLocalStorage("newSignaturesRequired");
   const [selectDisabled, setSelectDisabled] = useState(false);
@@ -167,9 +167,13 @@ export default function CreateTransaction({
           </div>
           <div style={{ margin: 8, padding: 8 }}>
             <Select value={methodName} disabled={selectDisabled} style={{ width: "100%" }} onChange={setMethodName}>
-              <Option key="transferFunds">transferFunds()</Option>
-              <Option key="addSigner">addSigner()</Option>
-              <Option key="removeSigner">removeSigner()</Option>
+              //<Option key="transferFunds">transferFunds()</Option>
+              <Option disabled={true} key="addSigner">
+                addSigner()
+              </Option>
+              <Option disabled={true} key="removeSigner">
+                removeSigner()
+              </Option>
             </Select>
           </div>
           <div style={inputStyle}>
@@ -184,7 +188,7 @@ export default function CreateTransaction({
 
           {!selectDisabled && (
             <div style={inputStyle}>
-              <EtherInput price={price} mode="ETH" value={amount} onChange={setAmount} />
+              <EtherInput price={price} mode="USD" value={amount} onChange={setAmount} />
             </div>
           )}
           <div style={inputStyle}>
@@ -203,6 +207,11 @@ export default function CreateTransaction({
             style={{ marginTop: 32 }}
             disabled={!isCreateTxnEnabled}
             onClick={async () => {
+              // setData(calldataInputRef.current.state.value)
+              // if (data && data == "0x") {
+              //   setResult("ERROR, Call Data Invalid");
+              //   return;
+              // }
               console.log("customNonce", customNonce);
               const nonce = customNonce || (await readContracts[contractName].nonce());
               console.log("nonce", nonce);
@@ -216,7 +225,6 @@ export default function CreateTransaction({
               console.log("newHash", newHash);
 
               const signature = await userProvider.signMessage(ethers.utils.arrayify(newHash));
-              // const signature = await userProvider.send("personal_sign", [newHash, address]);
               console.log("signature", signature);
 
               const recover = await readContracts[contractName].recover(newHash, signature);
@@ -246,13 +254,13 @@ export default function CreateTransaction({
                 await writeContracts[contractName].createTransaction(JSON.stringify(txData));
 
                 setTimeout(() => {
-                  setResult(newHash);
-                  setMethodName("addSigner");
-                  setTo("");
-                  setAmount("0");
-                  setData("0x");
                   history.push("/pool");
-                }, 2777);
+                }, 1000);
+
+                setResult(newHash);
+                setTo();
+                setAmount("0");
+                setData("0x");
               } else {
                 console.log("ERROR, NOT OWNER.");
                 setResult("ERROR, NOT OWNER.");

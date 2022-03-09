@@ -28,8 +28,40 @@ const TransactionListItem = function ({
 
   console.log("🔥🔥🔥🔥", item);
   let txnData;
+  // Standardise the transaction data so they can be displayed
   try {
-    if (item.functionSignature === "transferFunds") {
+    // Executed Transactions recreated from emitted event
+    if (item.event === "ExecuteTransaction") {
+      console.log("1");
+      if (item.args.data === "0x") {
+        txnData = {
+          ...item,
+          functionFragment: {
+            name: "Transfer ETH",
+            inputs: [],
+          },
+          args: [item.args.to],
+          value: formatEther(item.args.value),
+          nonce: item.args.nonce,
+          hash: item.args.hash,
+          to: item.args.to,
+        };
+      } else {
+        const wrappedTxn = readContracts[contractName].interface.parseTransaction({
+          data: item.args.data,
+          hash: item.args.hash,
+        });
+        txnData = {
+          ...wrappedTxn,
+          nonce: item.args.nonce,
+          hash: item.args.hash,
+          to: item.args.to,
+        };
+      }
+    }
+    // TransferFunds before exec
+    else if (item.functionSignature === "transferFunds") {
+      console.log("2");
       txnData = {
         ...item,
         functionFragment: {
@@ -37,24 +69,21 @@ const TransactionListItem = function ({
           inputs: [],
         },
         args: item.functionArgs,
+        value: item.amount,
+        to: item.to,
       };
-    } else if (item.event === "ExecuteTransaction") {
-      const wrappedTxn = readContracts[contractName].interface.parseTransaction({
-        data: item.args.data,
-        hash: item.args.hash,
-      });
-      txnData = {
-        ...wrappedTxn,
-        nonce: item.args.nonce,
-        hash: item.args.hash,
-        to: item.args.to,
-      };
-
-      console.log("\n\n", txnData, "\n\n");
-    } else {
-      txnData = readContracts[contractName].interface.parseTransaction(item);
-      console.log("\n\n", txnData, "\n\n");
     }
+    // Add/Remove Signers before exec
+    else {
+      console.log("3");
+      txnData = {
+        ...readContracts[contractName].interface.parseTransaction(item),
+        nonce: item.nonce,
+        hash: item.hash,
+        to: item.to,
+      };
+    }
+    console.log("\n\n", txnData, "\n\n");
   } catch (error) {
     console.log("ERROR", error);
   }
@@ -96,7 +125,11 @@ const TransactionListItem = function ({
           </span>
           <Address address={txnData.to} ensProvider={mainnetProvider} blockExplorer={blockExplorer} fontSize={16} />
           <Balance
-            balance={txnData.value ? txnData.value : parseEther("" + parseFloat(txnData.amount).toFixed(12))}
+            balance={
+              txnData.value
+                ? parseEther(txnData.value.toString())
+                : parseEther("" + parseFloat(txnData.amount).toFixed(12))
+            }
             dollarMultiplier={price}
           />
           <>{children}</>

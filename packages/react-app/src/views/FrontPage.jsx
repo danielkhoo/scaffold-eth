@@ -52,14 +52,6 @@ export default function FrontPage({
         bordered
         dataSource={executeTransactionEvents}
         renderItem={item => {
-          const txnData = {
-            functionSignature: item.event,
-            functionArgs: [],
-            nonce: item.args.nonce,
-            hash: item.args.hash,
-            toAddress: item.args.to,
-            value: item.args.value,
-          };
           return (
             <>
               <TransactionListItem
