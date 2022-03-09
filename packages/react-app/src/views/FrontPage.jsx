@@ -63,8 +63,7 @@ export default function FrontPage({
           return (
             <>
               <TransactionListItem
-                item={txnData}
-                rawTxn={item}
+                item={item}
                 mainnetProvider={mainnetProvider}
                 blockExplorer={blockExplorer}
                 price={price}

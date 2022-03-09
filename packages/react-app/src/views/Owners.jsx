@@ -28,8 +28,7 @@ export default function Owners({
   const history = useHistory();
 
   const [to, setTo] = useLocalStorage("to");
-  const [amount, setAmount] = useLocalStorage("amount", "0");
-  const [methodName, setMethodName] = useLocalStorage("addSigner");
+  const [methodName, setMethodName] = useLocalStorage("methodName");
   const [newOwner, setNewOwner] = useLocalStorage("newOwner");
   const [newSignaturesRequired, setNewSignaturesRequired] = useLocalStorage("newSignaturesRequired");
   const [data, setData] = useLocalStorage("data", "0x");
@@ -94,7 +93,6 @@ export default function Owners({
               ]);
               console.log("calldata", calldata);
               setData(calldata);
-              setAmount("0");
               setTo(readContracts[contractName].address);
               setTimeout(() => {
                 history.push("/create");

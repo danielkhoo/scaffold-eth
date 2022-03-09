@@ -27,15 +27,34 @@ const TransactionListItem = function ({
   };
 
   console.log("🔥🔥🔥🔥", item);
-  const txnData = item;
+  let txnData;
   try {
-    console.log("\n\n", rawTxn, "\n\n");
-    rawTxn.getTransaction().then(res => {
-      console.log(res);
-      const test = readContracts[contractName].interface.parseTransaction(res);
-      console.log(test);
-    });
-    // console.log("\n\n", test, "\n\n");
+    if (item.functionSignature === "transferFunds") {
+      txnData = {
+        ...item,
+        functionFragment: {
+          name: "Transfer ETH",
+          inputs: [],
+        },
+        args: item.functionArgs,
+      };
+    } else if (item.event === "ExecuteTransaction") {
+      const wrappedTxn = readContracts[contractName].interface.parseTransaction({
+        data: item.args.data,
+        hash: item.args.hash,
+      });
+      txnData = {
+        ...wrappedTxn,
+        nonce: item.args.nonce,
+        hash: item.args.hash,
+        to: item.args.to,
+      };
+
+      console.log("\n\n", txnData, "\n\n");
+    } else {
+      txnData = readContracts[contractName].interface.parseTransaction(item);
+      console.log("\n\n", txnData, "\n\n");
+    }
   } catch (error) {
     console.log("ERROR", error);
   }
@@ -64,20 +83,20 @@ const TransactionListItem = function ({
           >
             <p>
               <b>Event Name :&nbsp;</b>
-              {txnData.functionSignature}&nbsp;
+              {txnData.functionFragment.name}&nbsp;
             </p>
             <p>
               <b>Addressed to :&nbsp;</b>
-              {/* {txnData.functionArgs[0]} */}
+              {txnData.args[0]}
             </p>
           </div>
-          {<b style={{ padding: 16 }}>#{typeof item.nonce === "number" ? item.nonce : item.nonce.toNumber()}</b>}
+          {<b style={{ padding: 16 }}>#{txnData.nonce && txnData.nonce.toString()}</b>}
           <span>
-            <Blockie size={4} scale={8} address={item.hash} /> {item.hash.substr(0, 6)}
+            <Blockie size={4} scale={8} address={txnData.hash} /> {txnData.hash.substr(0, 6)}
           </span>
-          <Address address={item.toAddress} ensProvider={mainnetProvider} blockExplorer={blockExplorer} fontSize={16} />
+          <Address address={txnData.to} ensProvider={mainnetProvider} blockExplorer={blockExplorer} fontSize={16} />
           <Balance
-            balance={item.value ? item.value : parseEther("" + parseFloat(item.value).toFixed(12))}
+            balance={txnData.value ? txnData.value : parseEther("" + parseFloat(txnData.amount).toFixed(12))}
             dollarMultiplier={price}
           />
           <>{children}</>

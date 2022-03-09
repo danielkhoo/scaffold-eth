@@ -27,30 +27,32 @@ export default function Transactions({
 }) {
   const [transactions, setTransactions] = useState([]);
 
-  const currentNonce = nonce ? nonce.toNumber() : 0;
-  const pendingTransaction = useContractReader(readContracts, contractName, "transactions", [currentNonce]);
-
   useEffect(() => {
     async function getTransactions() {
-      if (pendingTransaction && pendingTransaction != "") {
-        const transaction = JSON.parse(pendingTransaction);
-        const validSignatures = [];
-        for (const s in transaction.signatures) {
-          // Validate signatures with recover function
-          const signer = await readContracts[contractName].recover(transaction.hash, transaction.signatures[s]);
-          const isSigner = await readContracts[contractName].isSigner(signer);
-          if (signer && isSigner) {
-            validSignatures.push({ signer, signature: transaction.signatures[s] });
-          }
-        }
-        const update = [{ ...transaction, validSignatures }];
+      if (readContracts[contractName]) {
+        const currentNonce = nonce ? nonce.toNumber() : 0;
+        const pendingTransaction = await readContracts[contractName].transactions(currentNonce);
 
-        console.log("\n\n", nonce.toNumber(), transaction, update, "\n\n");
-        setTransactions(update);
+        if (pendingTransaction && pendingTransaction != "") {
+          const transaction = JSON.parse(pendingTransaction);
+          const validSignatures = [];
+          for (const s in transaction.signatures) {
+            // Validate signatures with recover function
+            const signer = await readContracts[contractName].recover(transaction.hash, transaction.signatures[s]);
+            const isSigner = await readContracts[contractName].isSigner(signer);
+            if (signer && isSigner) {
+              validSignatures.push({ signer, signature: transaction.signatures[s] });
+            }
+          }
+          const update = [{ ...transaction, validSignatures }];
+
+          console.log("\n\n", nonce.toNumber(), transaction, update, "\n\n");
+          setTransactions(update);
+        }
       }
     }
     getTransactions();
-  }, [pendingTransaction]);
+  }, [nonce]);
 
   const getSortedSigList = async (allSigs, newHash) => {
     console.log("allSigs", allSigs);
@@ -102,8 +104,9 @@ export default function Transactions({
           console.log("ITE88888M", item);
 
           const hasSigned = item.signers.indexOf(address) >= 0;
-          const hasEnoughSignatures = item.signatures.length <= signaturesRequired.toNumber();
+          const hasEnoughSignatures = item.signatures.length >= signaturesRequired.toNumber();
 
+          console.log(item.signatures.length, signaturesRequired.toNumber(), hasEnoughSignatures);
           return (
             <TransactionListItem
               item={item}
@@ -162,9 +165,9 @@ export default function Transactions({
                 onClick={async () => {
                   const newHash = await readContracts[contractName].getTransactionHash(
                     item.nonce,
-                    item.toAddress,
-                    parseEther("" + parseFloat(item.value).toFixed(12)),
-                    item.calldata,
+                    item.to,
+                    parseEther("" + parseFloat(item.amount).toFixed(12)),
+                    item.data,
                   );
                   console.log("newHash", newHash);
 
@@ -172,17 +175,12 @@ export default function Transactions({
 
                   const [finalSigList, finalSigners] = await getSortedSigList(item.signatures, newHash);
 
-                  console.log(
-                    item.toAddress,
-                    parseEther("" + parseFloat(item.value).toFixed(12)),
-                    item.calldata,
-                    finalSigList,
-                  );
+                  console.log(item.to, parseEther("" + parseFloat(item.amount).toFixed(12)), item.data, finalSigList);
                   tx(
                     writeContracts[contractName].executeTransaction(
-                      item.toAddress,
-                      parseEther("" + parseFloat(item.value).toFixed(12)),
-                      item.calldata,
+                      item.to,
+                      parseEther("" + parseFloat(item.amount).toFixed(12)),
+                      item.data,
                       finalSigList,
                     ),
                   );
