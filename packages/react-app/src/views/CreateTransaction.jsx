@@ -40,7 +40,7 @@ export default function CreateTransaction({
   const [data, setData] = useLocalStorage("data", "0x");
   const [isCreateTxnEnabled, setCreateTxnEnabled] = useState(true);
   const [decodedDataState, setDecodedData] = useState();
-  const [methodName, setMethodName] = useState();
+  const [methodName, setMethodName] = useLocalStorage("methodName");
   const [newOwner, setNewOwner] = useLocalStorage("newOwner");
   const [newSignaturesRequired, setNewSignaturesRequired] = useLocalStorage("newSignaturesRequired");
   const [selectDisabled, setSelectDisabled] = useState(false);
@@ -51,87 +51,6 @@ export default function CreateTransaction({
   const inputStyle = {
     padding: 10,
   };
-  let decodedDataObject = "";
-  useEffect(() => {
-    const inputTimer = setTimeout(async () => {
-      console.log("EFFECT RUNNING");
-      try {
-        // if(methodName == "transferFunds"){
-        //   console.log("Send transaction selected")
-        //   console.log("🔥🔥🔥🔥🔥🔥",amount)
-        //     const calldata = readContracts[contractName].interface.encodeFunctionData("transferFunds",[to,parseEther("" + parseFloat(amount).toFixed(12))])
-        //     setData(calldata);
-        // }
-        // decodedDataObject = readContracts ? await readContracts[contractName].interface.parseTransaction({ data }) : "";
-        // console.log("decodedDataObject", decodedDataObject);
-        // setCreateTxnEnabled(true);
-        if (decodedDataObject.signature === "addSigner(address,uint256)") {
-          setMethodName("addSigner");
-          setSelectDisabled(true);
-        } else if (decodedDataObject.signature === "removeSigner(address,uint256)") {
-          setMethodName("removeSigner");
-          setSelectDisabled(true);
-        }
-        decodedData = (
-          <div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "left",
-                marginTop: 16,
-                marginBottom: 16,
-              }}
-            >
-              {decodedDataObject && decodedDataObject.signature && <b>Function Signature : </b>}
-              {decodedDataObject.signature}
-            </div>
-            {decodedDataObject.functionFragment &&
-              decodedDataObject.functionFragment.inputs.map((element, index) => {
-                if (element.type === "address") {
-                  return (
-                    <div
-                      style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "left" }}
-                    >
-                      <b>{element.name} :&nbsp;</b>
-                      <Address fontSize={16} address={decodedDataObject.args[index]} ensProvider={mainnetProvider} />
-                    </div>
-                  );
-                }
-                if (element.type === "uint256") {
-                  return (
-                    <p style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "left" }}>
-                      {element.name === "value" ? (
-                        <>
-                          <b>{element.name} : </b>{" "}
-                          <Balance fontSize={16} balance={decodedDataObject.args[index]} dollarMultiplier={price} />{" "}
-                        </>
-                      ) : (
-                        <>
-                          <b>{element.name} : </b>{" "}
-                          {decodedDataObject.args[index] && decodedDataObject.args[index].toNumber()}
-                        </>
-                      )}
-                    </p>
-                  );
-                }
-              })}
-          </div>
-        );
-        setDecodedData(decodedData);
-        setCreateTxnEnabled(true);
-        setResult();
-      } catch (error) {
-        console.log("mistake: ", error);
-        if (data !== "0x") setResult("ERROR: Invalid calldata");
-        setCreateTxnEnabled(false);
-      }
-    }, 500);
-    return () => {
-      clearTimeout(inputTimer);
-    };
-  }, [data, decodedData, amount]);
 
   let resultDisplay;
   if (result) {
@@ -155,7 +74,9 @@ export default function CreateTransaction({
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
       <div style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}>
+        <h2 style={{ margin: 24 }}>Create Transaction</h2>
         <div style={{ margin: 8 }}>
+          <b>Nonce</b>
           <div style={inputStyle}>
             <Input
               prefix="#"
@@ -165,8 +86,18 @@ export default function CreateTransaction({
               onChange={setCustomNonce}
             />
           </div>
+
           <div style={{ margin: 8, padding: 8 }}>
-            <Select value={methodName} disabled={selectDisabled} style={{ width: "100%" }} onChange={setMethodName}>
+            <b>Function</b>
+            <Select
+              value={methodName}
+              disabled={selectDisabled}
+              style={{ width: "100%" }}
+              onChange={e => {
+                setData("0x");
+                setMethodName(e);
+              }}
+            >
               //<Option key="transferFunds">transferFunds()</Option>
               <Option disabled={true} key="addSigner">
                 addSigner()
@@ -176,6 +107,7 @@ export default function CreateTransaction({
               </Option>
             </Select>
           </div>
+          <b>Address</b>
           <div style={inputStyle}>
             <AddressInput
               autoFocus
@@ -185,12 +117,13 @@ export default function CreateTransaction({
               onChange={setTo}
             />
           </div>
-
+          <b>Value</b>
           {!selectDisabled && (
             <div style={inputStyle}>
               <EtherInput price={price} mode="USD" value={amount} onChange={setAmount} />
             </div>
           )}
+          <b>Calldata</b>
           <div style={inputStyle}>
             <Input
               placeholder="calldata"

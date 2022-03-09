@@ -33,6 +33,8 @@ export default function Owners({
   const [newSignaturesRequired, setNewSignaturesRequired] = useLocalStorage("newSignaturesRequired");
   const [data, setData] = useLocalStorage("data", "0x");
 
+  // Manually switch away from transfer funds on this screen
+  if (methodName === "transferFunds") setMethodName("addSigner");
   return (
     <div>
       <h2 style={{ marginTop: 32 }}>
