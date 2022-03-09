@@ -20,7 +20,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const multisig = await deploy("MetaMultiSigWallet", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
-    args: [["0x955a3ec178A76cA2f5cA52fFa88390E341430058"], 1],
+    args: [["0xA00F36889e25249492f93e00852Ba183776DC747"], 1],
     log: true,
     waitConfirmations: 5,
   });
