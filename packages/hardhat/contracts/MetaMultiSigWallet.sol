@@ -20,14 +20,9 @@ contract MetaMultiSigWallet {
     mapping(address => bool) public isSigner;
     uint256 public signaturesRequired;
     uint256 public nonce;
-    uint256 public chainId;
     mapping(uint256 => string) public transactions;
 
-    constructor(
-        uint256 _chainId,
-        address[] memory _signers,
-        uint256 _signaturesRequired
-    ) {
+    constructor(address[] memory _signers, uint256 _signaturesRequired) {
         require(
             _signaturesRequired > 0,
             "constructor: signatures required must be non-zero"
@@ -39,7 +34,6 @@ contract MetaMultiSigWallet {
             isSigner[signer] = true;
             emit Signer(signer, isSigner[signer]);
         }
-        chainId = _chainId;
     }
 
     /// All write functions are gated by onlySelf, forcing them to be run via
