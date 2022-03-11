@@ -2,7 +2,7 @@
 
 ![image](https://user-images.githubusercontent.com/4507317/157881834-a2d4e342-a622-44bb-ab98-7f3265fd3770.png)
 
-This is a proof of concept, wallet-bound dynamic SVG NFT that reads data from multiple external on render. For the full write up and explanation with diagrams, see my blog post https://jadenkore.medium.com/creating-a-dynamic-nft-that-updates-in-real-time-based-on-chain-data-3d989c04f137.
+This is a proof of concept, wallet-bound dynamic SVG NFT that reads data from multiple external contracts on render. For the full write up and explanation with diagrams, see my blog post https://jadenkore.medium.com/creating-a-dynamic-nft-that-updates-in-real-time-based-on-chain-data-3d989c04f137.
 
 View the minted items on OpenSea: https://opensea.io/collection/buidlguidl-tabard
 
