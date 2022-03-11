@@ -3,6 +3,7 @@
 This is a proof of concept, wallet-bound dynamic SVG NFT that reads data from multiple external on render. For the full write up and explanation with diagrams, see my blog post https://jadenkore.medium.com/creating-a-dynamic-nft-that-updates-in-real-time-based-on-chain-data-3d989c04f137.
 
 View the minted items on OpenSea: https://opensea.io/collection/buidlguidl-tabard
+
 Minting interface for BuidlGuidl Members: https://buidlguidltabards.surge.sh/ (NOTE: USE YOUR STREAM ADDRESS NOT WALLET ADDRESS WHEN MINTING)
 
 This branch is built of the master Scaffold-Eth branch. The only changes are the [BuidlGuidlTabard Contract](https://github.com/danielkhoo/scaffold-eth/blob/buidl-guidl-dynamic-nft/packages/hardhat/contracts/BuidlGuidlTabard.sol) and the frontend minting/display.
