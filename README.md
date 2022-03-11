@@ -1,11 +1,21 @@
-# 🏗 Scaffold-ETH
+# 🏗 BuidlGuidl Dynamic SVG NFTs
 
-> everything you need to build on Ethereum! 🚀
+This is a proof of concept, wallet-bound dynamic SVG NFT that reads data from multiple external on render. For the full write up and explanation with diagrams, see my blog post https://jadenkore.medium.com/creating-a-dynamic-nft-that-updates-in-real-time-based-on-chain-data-3d989c04f137.
 
-🧪 Quickly experiment with Solidity using a frontend that adapts to your smart contract:
+View the minted items on OpenSea: https://opensea.io/collection/buidlguidl-tabard
+Minting interface for BuidlGuidl Members: https://buidlguidltabards.surge.sh/ (NOTE: USE YOUR STREAM ADDRESS NOT WALLET ADDRESS WHEN MINTING)
 
-![image](https://user-images.githubusercontent.com/2653167/124158108-c14ca380-da56-11eb-967e-69cde37ca8eb.png)
+This branch is built of the master Scaffold-Eth branch. The only changes are the [BuidlGuidlTabard Contract](https://github.com/danielkhoo/scaffold-eth/blob/buidl-guidl-dynamic-nft/packages/hardhat/contracts/BuidlGuidlTabard.sol) and the frontend minting/display.
 
+### External Contract Calls 
+
+Most of the code is pretty self-explanatory. An interesting bit is using interfaces to interact with the two external contracts. Very common for other types of smart contracts but not for NFTs. The first external contract is an ETH stream that each BuidlGuidl member has. The mint `function mintItem(address streamAddress)` expects a contract address which withdraws to the minters wallet. This contract’s balance is shown in the SVG.
+
+The second external contract is the Ethereum Naming Service’s Reverse Record contract that resolves the ENS name (if any) associated with the minter’s address. You can learn more about it at their repo https://github.com/ensdomains/reverse-records
+
+### Wallet Bound
+
+The other quirk is the token id. Inspired by Ross Campbell’s [Soulbound NFT idea](https://twitter.com/r_ross_campbell/status/1495928974907748353), instead of regular integers the tokenId is a uint256 version of their address. Thus even if the token is transferred to another wallet, the associated address and data it looks up on chain will stay tied to the original minter’s address. Bound NFTs are an interesting as they are valueless for resale (since the display is tied on the minter) but at the same time can be immensely valuable to the bearer as an on-chain credential cannot be bought only earned.
 
 # 🏄‍♂️ Quick Start
 
