@@ -3,15 +3,17 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./YourToken.sol";
 
 // import "@openzeppelin/contracts/access/Ownable.sol";
 // https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
 
-contract YourContract {
+contract YourContract is Ownable {
     constructor() {}
 
     // ================= 1. Read / Update Values =================
-
+    /*
     // Event that triggers when it gets emitted
     event SetPurpose(address sender, string purpose);
 
@@ -24,11 +26,11 @@ contract YourContract {
         emit SetPurpose(msg.sender, part1_purpose);
     }
 
-    /**/
+    */
     // ===========================================================
 
     // ================= 2. Deposit/Withdraw Funds =================
-    /*
+    /* 
     mapping(address => uint256) public part2_balances;
 
     function part2_deposit() public payable {
@@ -58,9 +60,8 @@ contract YourContract {
         part2_deposit();
     }
     */
-
     // ================= 2.1 Block time and timelocks =================
-    /*
+    /* 
     function part2_timeLockedWithdraw() public {
         // Check time remaining is 0
         uint256 timeRemaining = part2_timeLeft();
@@ -84,29 +85,29 @@ contract YourContract {
     // ===========================================================
 
     // ================= 3. Commit / Reveal =================
-    /*  
-    bytes32 public part3_commitHash;
-    string public part3_revealMessage;
 
-    function part3_commit(string memory message, string memory salt) public {
-        part3_commitHash = keccak256(abi.encodePacked(message, salt));
-    }
+    // bytes32 public part3_commitHash;
+    // string public part3_revealMessage;
 
-    function part3_reveal(string memory message, string memory salt) public {
-        bytes32 checkHash = keccak256(abi.encodePacked(message, salt));
+    // function part3_commit(string memory message, string memory salt) public {
+    //     part3_commitHash = keccak256(abi.encodePacked(message, salt));
+    // }
 
-        require(
-            checkHash == part3_commitHash,
-            "Invalid reveal. Either message or salt does not match commit."
-        );
+    // function part3_reveal(string memory message, string memory salt) public {
+    //     bytes32 checkHash = keccak256(abi.encodePacked(message, salt));
 
-        part3_revealMessage = message;
-    }
-    */
+    //     require(
+    //         checkHash == part3_commitHash,
+    //         "Invalid reveal. Either message or salt does not match commit."
+    //     );
+
+    //     part3_revealMessage = message;
+    // }
+
     // =======================================================
 
     // ================= 4. Signaure Recovery / Meta Transactions =================
-    /*
+
     using ECDSA for bytes32;
 
     uint256 public nonce = 0;
@@ -134,15 +135,30 @@ contract YourContract {
     ) public {
         bytes32 hash = part4_getHash(to, value);
         address signer = part4_recover(hash, signature);
-        require(signer == msg.sender, "Recovered address doesn't match sender");
+        require(signer == owner(), "Recovered address match signer");
         nonce++;
-        (
-            bool success,  bytes memory data 
-
-        ) = to.call{value: value}("");
+        (bool success, ) = to.call{value: value}("");
         require(success, "TX FAILED");
     }
-    */
-    // receive() external payable {}
+
+    receive() external payable {}
+
+    // =======================================================
+
+    // ================= 5. ERC20 Approve Pattern =================
+    YourToken public yourToken;
+
+    function part5_setTokenAddress(address tokenAddress) public {
+        yourToken = YourToken(tokenAddress);
+    }
+
+    function part5_depositTokens(uint256 amountOfTokens) public {
+        // Check some eth is sent
+        require(amountOfTokens > 0, "No tokens sents");
+
+        // Send user tokens
+        yourToken.transferFrom(msg.sender, address(this), amountOfTokens);
+    }
+
     // =======================================================
 }
