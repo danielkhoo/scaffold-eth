@@ -13,7 +13,7 @@ contract YourContract is Ownable {
     constructor() {}
 
     // ================= 1. Read / Update Values =================
-    /*
+
     // Event that triggers when it gets emitted
     event SetPurpose(address sender, string purpose);
 
@@ -26,11 +26,11 @@ contract YourContract is Ownable {
         emit SetPurpose(msg.sender, part1_purpose);
     }
 
-    */
+    /* */
     // ===========================================================
 
     // ================= 2. Deposit/Withdraw Funds =================
-    /* 
+    /*
     mapping(address => uint256) public part2_balances;
 
     function part2_deposit() public payable {
@@ -59,9 +59,10 @@ contract YourContract is Ownable {
     receive() external payable {
         part2_deposit();
     }
-    */
+*/
+    // ===========================================================
     // ================= 2.1 Block time and timelocks =================
-    /* 
+    /*  
     function part2_timeLockedWithdraw() public {
         // Check time remaining is 0
         uint256 timeRemaining = part2_timeLeft();
@@ -85,29 +86,29 @@ contract YourContract is Ownable {
     // ===========================================================
 
     // ================= 3. Commit / Reveal =================
+    /*
+    bytes32 public part3_commitHash;
+    string public part3_revealMessage;
 
-    // bytes32 public part3_commitHash;
-    // string public part3_revealMessage;
+    function part3_commit(string memory message, string memory salt) public {
+        part3_commitHash = keccak256(abi.encodePacked(message, salt));
+    }
 
-    // function part3_commit(string memory message, string memory salt) public {
-    //     part3_commitHash = keccak256(abi.encodePacked(message, salt));
-    // }
+    function part3_reveal(string memory message, string memory salt) public {
+        bytes32 checkHash = keccak256(abi.encodePacked(message, salt));
 
-    // function part3_reveal(string memory message, string memory salt) public {
-    //     bytes32 checkHash = keccak256(abi.encodePacked(message, salt));
+        require(
+            checkHash == part3_commitHash,
+            "Invalid reveal. Either message or salt does not match commit."
+        );
 
-    //     require(
-    //         checkHash == part3_commitHash,
-    //         "Invalid reveal. Either message or salt does not match commit."
-    //     );
-
-    //     part3_revealMessage = message;
-    // }
-
+        part3_revealMessage = message;
+    }
+    */
     // =======================================================
 
     // ================= 4. Signaure Recovery / Meta Transactions =================
-
+    /* 
     using ECDSA for bytes32;
 
     uint256 public nonce = 0;
@@ -142,10 +143,11 @@ contract YourContract is Ownable {
     }
 
     receive() external payable {}
-
+    */
     // =======================================================
 
     // ================= 5. ERC20 Approve Pattern =================
+    /* 
     YourToken public yourToken;
 
     function part5_setTokenAddress(address tokenAddress) public {
@@ -159,6 +161,6 @@ contract YourContract is Ownable {
         // Send user tokens
         yourToken.transferFrom(msg.sender, address(this), amountOfTokens);
     }
-
+    */
     // =======================================================
 }
