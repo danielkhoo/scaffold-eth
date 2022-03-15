@@ -374,7 +374,23 @@ function App(props) {
       </Menu>
 
       <Switch>
-        <Route exact path="/"></Route>
+        <Route exact path="/">
+          <Card
+            title={
+              <div style={{ fontSize: 24 }}>
+                Scaffold-Eth Kitchen Sink Reference
+                <div style={{ float: "right" }}></div>
+              </div>
+            }
+            size="large"
+            style={{ margin: "auto", width: "70vw", marginTop: 25 }}
+          >
+            <p>
+              Welcome to the Scaffold-Eth Kitchen Sink Reference. Check out the full tutorial in the{" "}
+              <a href="https://github.com/danielkhoo/scaffold-eth/tree/cheatsheet">README</a>.
+            </p>
+          </Card>
+        </Route>
         <Route exact path="/yourcontract">
           {/* ======= Sign transaction hash UI ======= */}
           {/* <Card
