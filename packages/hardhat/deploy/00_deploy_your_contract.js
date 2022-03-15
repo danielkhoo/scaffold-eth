@@ -23,18 +23,8 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const yourContract = await ethers.getContract("YourContract", deployer);
   await yourContract.transferOwnership(YOUR_WALLET_ADDRESS);
 
-  // ================ DEMO ERC-721 Contract ================
-
-  await deploy("YourCollectible", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
-    from: deployer,
-    // args: [ "Hello", ethers.utils.parseEther("1.5") ],
-    log: true,
-    waitConfirmations: 5,
-  });
-  /**/
   // ================ DEMO ERC-20 Contract ================
-
+  /* 
   await deploy("YourToken", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
@@ -47,6 +37,18 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const yourToken = await ethers.getContract("YourToken", deployer);
   // Transfer some tokens to your frontend address
   await yourToken.transfer(YOUR_WALLET_ADDRESS, ethers.utils.parseEther("10"));
-  /**/
+  */
+
+  // ================ DEMO ERC-721 Contract ================
+  /* 
+  await deploy("YourCollectible", {
+    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+    from: deployer,
+    // args: [ "Hello", ethers.utils.parseEther("1.5") ],
+    log: true,
+    waitConfirmations: 5,
+  });
+  */
+
 };
 module.exports.tags = ["YourContract"];
