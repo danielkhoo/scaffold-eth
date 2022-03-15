@@ -319,6 +319,7 @@ function App(props) {
 
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
+  // ======= Mint Item UI =======
   const mintItem = async () => {
     // upload to ipfs
     const uploaded = await ipfs.add(JSON.stringify(BISON_METADATA));
@@ -364,22 +365,22 @@ function App(props) {
         <Menu.Item key="/yourcontract">
           <Link to="/yourcontract">Demo Contract</Link>
         </Menu.Item>
-        <Menu.Item key="/yourcollectible">
-          <Link to="/yourcollectible">Demo NFT Contract</Link>
-        </Menu.Item>
         <Menu.Item key="/yourtoken">
           <Link to="/yourtoken">Demo Token Contract</Link>
+        </Menu.Item>
+        <Menu.Item key="/yourcollectible">
+          <Link to="/yourcollectible">Demo NFT Contract</Link>
         </Menu.Item>
       </Menu>
 
       <Switch>
         <Route exact path="/"></Route>
         <Route exact path="/yourcontract">
-          {/* Sign transaction hash UI */}
+          {/* ======= Sign transaction hash UI ======= */}
           {/* <Card
             title={
               <div style={{ fontSize: 24 }}>
-                Signature Recover
+                Sign Transaction Hash
                 <div style={{ float: "right" }}></div>
               </div>
             }
@@ -436,7 +437,17 @@ function App(props) {
             contractConfig={contractConfig}
           />
         </Route>
-
+        <Route exact path="/yourtoken">
+          <Contract
+            name="YourToken"
+            price={price}
+            signer={userSigner}
+            provider={localProvider}
+            address={address}
+            blockExplorer={blockExplorer}
+            contractConfig={contractConfig}
+          />
+        </Route>
         <Route exact path="/yourcollectible">
           <Card
             title={
@@ -487,17 +498,6 @@ function App(props) {
           </Card>
           <Contract
             name="YourCollectible"
-            price={price}
-            signer={userSigner}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-          />
-        </Route>
-        <Route exact path="/yourtoken">
-          <Contract
-            name="YourToken"
             price={price}
             signer={userSigner}
             provider={localProvider}
