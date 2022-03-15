@@ -143,7 +143,7 @@ Now that we have the transaction hash and signature we can do a "recover" to ver
 
 Note that signed transactions can be executed by anyone not just the signer. To illustrate open a new incognito tab. This will give you a fresh burner wallet. Get some eth from the faucet for gas.
 
-![image](https://user-images.githubusercontent.com/4507317/158334458-11f237a3-970f-49c6-8c9e-ec00e20aba0c.png)
+![image](https://user-images.githubusercontent.com/4507317/158335639-a9325c2a-772e-4895-b848-9e2ba0c767d7.png)
 
 You'll be able to run `part4_executeSignedSend` with the signature we generated provided you use the same to address and amount. It won't work if any of the values are changed.
 
