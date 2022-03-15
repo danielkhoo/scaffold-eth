@@ -135,7 +135,7 @@ Get the transaction hash. Now we need to sign the transaction hash with our wall
 
 You should see a new component `Sign Transaction Hash`. Enter your transaction hash from previously to generate a signature.
 
-![image](https://user-images.githubusercontent.com/4507317/158331703-3b91d188-d7d2-432e-827f-95e8941063ca.png)
+![image](https://user-images.githubusercontent.com/4507317/158335203-40ef2208-11bb-4c4c-bb15-37c9584014cb.png)
 
 Now that we have the transaction hash and signature we can do a "recover" to verify that the signature is valid. Enter both into `part4_recover` and the result should be your wallet address.
 
