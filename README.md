@@ -1,4 +1,4 @@
-# 🏗 Scaffold-ETH Kitchen Sink Reference and Tutorial
+# 🏗 Scaffold-ETH Cheatsheet and Tutorial
 
 > Quick Reference Guide for Scaffold-Eth and SpeedRunEthereum.
 
