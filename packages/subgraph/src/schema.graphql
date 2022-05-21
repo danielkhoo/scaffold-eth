@@ -1,15 +1,25 @@
-type Purpose @entity {
+type Admin @entity {
   id: ID!
-  sender: Sender!
-  purpose: String!
-  createdAt: BigInt!
-  transactionHash: String!
+  certificatesCreated: [CertificateTemplate!] @derivedFrom(field: "admin")
 }
 
-type Sender @entity {
+type CertificateTemplate @entity {
   id: ID!
-  address: Bytes!
-  purposes: [Purpose!] @derivedFrom(field: "sender")
+  admin: Admin
+  name: String!
   createdAt: BigInt!
-  purposeCount: BigInt!
+  issued: [Certificate!] @derivedFrom(field: "template")
+}
+
+type Certificate @entity {
+  id: ID!
+  template: CertificateTemplate!
+  user: User!
+  createdAt: BigInt!
+}
+
+type User @entity {
+  id: ID!
+  certificates: [Certificate!] @derivedFrom(field: "user")
+  createdAt: BigInt!
 }

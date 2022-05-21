@@ -7,18 +7,22 @@ dataSources:
     network: localhost
     source:
       abi: YourContract
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+      address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - Purpose
-        - Sender
+        - Admin
+        - User
+        - CertificateTemplate
+        - Certificate
       abis:
         - name: YourContract
           file: ./abis/localhost_YourContract.json
       eventHandlers:
-        - event: SetPurpose(address,string)
-          handler: handleSetPurpose
+        - event: RegisterCertificate(address,address,string)
+          handler: handleRegisterCertificate
+        - event: CertifyUser(address,address)
+          handler: handleCertifyUser
       file: ./src/mapping.ts

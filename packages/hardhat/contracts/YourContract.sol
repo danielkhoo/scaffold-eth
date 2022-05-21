@@ -7,22 +7,63 @@ import "hardhat/console.sol";
 // https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
 
 contract YourContract {
-    event SetPurpose(address sender, string purpose);
+    event RegisterCertificate(
+        address sender,
+        address certHash,
+        string certName
+    );
+    event CertifyUser(address userAddress, address certHash);
 
-    string public purpose = "Hello there";
-
-    constructor() payable {
-        // what should we do on deploy?
+    struct CertificateInfo {
+        string name;
+        address admin;
     }
 
-    function setPurpose(string memory newPurpose) public {
-        purpose = newPurpose;
-        console.log(msg.sender, "set purpose to", purpose);
-        emit SetPurpose(msg.sender, purpose);
+    // Maps quiz hash => quiz info
+    mapping(address => CertificateInfo) public certInfo;
+
+    // Maps user achievements
+    mapping(address => mapping(address => bool)) certCompletion;
+
+    // Maps active certs
+    mapping(address => address) public activeCert;
+
+    // register a certificate
+    function register(string memory certName) public returns (address) {
+        address certHash = generateCertHash();
+
+        certInfo[certHash].name = certName;
+        certInfo[certHash].admin = msg.sender;
+
+        emit RegisterCertificate(msg.sender, certHash, certName);
+
+        activeCert[msg.sender] = certHash;
+        return certHash;
     }
 
-    // to support receiving ETH by default
-    receive() external payable {}
+    function certifyAddress(address userAddress, address certHash) public {
+        require(
+            certInfo[certHash].admin == msg.sender,
+            "Not the admin of cert"
+        );
 
-    fallback() external payable {}
+        certCompletion[userAddress][certHash] = true;
+
+        emit CertifyUser(userAddress, certHash);
+    }
+
+    function getCertStatus(address userAddress, address certHash)
+        public
+        view
+        returns (bool result)
+    {
+        return certCompletion[userAddress][certHash];
+    }
+
+    function generateCertHash() public view returns (address) {
+        bytes32 prevHash = blockhash(block.number - 1);
+        // Cert hash is a pseudo-randomly generated address from last blockhash + sender
+        return
+            address(bytes20(keccak256(abi.encodePacked(prevHash, msg.sender))));
+    }
 }

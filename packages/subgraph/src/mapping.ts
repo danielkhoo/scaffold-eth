@@ -1,33 +1,50 @@
-import { BigInt, Address } from "@graphprotocol/graph-ts";
+import { BigInt, Address, log } from "@graphprotocol/graph-ts";
 import {
   YourContract,
-  SetPurpose,
+  RegisterCertificate,
+  CertifyUser,
 } from "../generated/YourContract/YourContract";
-import { Purpose, Sender } from "../generated/schema";
+import { User, Certificate, Admin, CertificateTemplate } from "../generated/schema";
 
-export function handleSetPurpose(event: SetPurpose): void {
+
+
+export function handleRegisterCertificate(event: RegisterCertificate): void {
   let senderString = event.params.sender.toHexString();
+  let certHash = event.params.certHash.toHexString()
 
-  let sender = Sender.load(senderString);
-
+  let sender = Admin.load(senderString);
   if (sender === null) {
-    sender = new Sender(senderString);
-    sender.address = event.params.sender;
-    sender.createdAt = event.block.timestamp;
-    sender.purposeCount = BigInt.fromI32(1);
-  } else {
-    sender.purposeCount = sender.purposeCount.plus(BigInt.fromI32(1));
+    sender = new Admin(senderString);
   }
 
-  let purpose = new Purpose(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  );
+  let template = new CertificateTemplate(certHash)
+  template.admin = senderString;
+  template.name = event.params.certName
+  template.createdAt = event.block.timestamp;
 
-  purpose.purpose = event.params.purpose;
-  purpose.sender = senderString;
-  purpose.createdAt = event.block.timestamp;
-  purpose.transactionHash = event.transaction.hash.toHex();
-
-  purpose.save();
+  template.save();
   sender.save();
+}
+
+export function handleCertifyUser(event: CertifyUser): void {
+  let userAddressString = event.params.userAddress.toHexString();
+  let certHash = event.params.certHash.toHexString();
+
+  let template = CertificateTemplate.load(certHash)
+  if (template == null) return
+
+  let user = User.load(userAddressString);
+  if (user === null) {
+    user = new User(userAddressString);
+    user.createdAt = event.block.timestamp;
+  }
+
+
+  let certificate = new Certificate(event.transaction.hash.toHex())
+  certificate.template = certHash
+  certificate.user = userAddressString
+  certificate.createdAt = event.block.timestamp;
+
+  certificate.save();
+  user.save();
 }
