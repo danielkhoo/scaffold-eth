@@ -7,6 +7,8 @@ import humanizeDuration from "humanize-duration";
 import Text from "antd/lib/typography/Text";
 import { useContractReader } from "eth-hooks";
 
+const { ethers } = require("ethers");
+
 export default function GameUI({
   address,
   mainnetProvider,
@@ -121,9 +123,19 @@ export default function GameUI({
       });
       return;
     }
-    const result = tx(writeContracts.RockPaperScissors.commit(commitChoice, commitSalt), txnUpdate);
+
+    const hash = ethers.utils.solidityKeccak256(["string", "string"], [commitChoice, commitSalt]);
+
+    const result = tx(writeContracts.RockPaperScissors.commit(hash), txnUpdate);
   };
   const reveal = async () => {
+    if (!commitChoice) {
+      notification["warning"]({
+        message: "No choice selected",
+        description: "Please choose rock, paper or scissors",
+      });
+      return;
+    }
     if (revealSalt.length === 0) {
       notification["warning"]({
         message: "No password provided",
@@ -131,7 +143,7 @@ export default function GameUI({
       });
       return;
     }
-    const result = tx(writeContracts.RockPaperScissors.reveal(revealSalt), txnUpdate);
+    const result = tx(writeContracts.RockPaperScissors.reveal(commitChoice, revealSalt), txnUpdate);
     await logTxn(result);
   };
   const claimWin = async () => {
