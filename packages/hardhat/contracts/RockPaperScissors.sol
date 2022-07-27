@@ -116,28 +116,14 @@ contract RockPaperScissors {
     /**
      * @notice Function for players to commit their choice
      * @dev players can commit multiple times to change their choice until the other player commits
-     * @param choice - "rock", "paper" or "scissors"
-     * @param salt - a player chosen secret string used to "salt" the commit hash
+     * @param commitHash Commit hash (choice + salt)
      */
-    function commit(string memory choice, string memory salt)
+    function commit(bytes32 commitHash)
         public
         validGameState(activeGame[msg.sender], GameState.CommitPhase)
     {
         // Get the game hash from active game mapping
         address gameHash = activeGame[msg.sender];
-
-        bytes32 unsaltedChoiceHash = keccak256(abi.encodePacked(choice));
-
-        // Check choice is valid i.e. "rock", "paper", "scissors"
-        require(
-            unsaltedChoiceHash == rockHash ||
-                unsaltedChoiceHash == paperHash ||
-                unsaltedChoiceHash == scissorsHash,
-            "Invalid choice. Please select 'rock', 'paper' or 'scissors'"
-        );
-
-        // Generate commit hash with choice + user chosen salt
-        bytes32 commitHash = keccak256(abi.encodePacked(choice, salt));
 
         bool isPlayer1 = games[gameHash].player1 == msg.sender;
         if (isPlayer1) {
@@ -160,10 +146,20 @@ contract RockPaperScissors {
      * @notice Unlike commit, players can only reveal once
      * @param salt - a player chosen secret string from the "commit" phase used to prove their choice via a hash match
      */
-    function reveal(string memory salt)
+    function reveal(string memory choice, string memory salt)
         public
         validGameState(activeGame[msg.sender], GameState.RevealPhase)
     {
+        bytes32 unsaltedChoiceHash = keccak256(abi.encodePacked(choice));
+
+        // Check choice is valid i.e. "rock", "paper", "scissors"
+        require(
+            unsaltedChoiceHash == rockHash ||
+                unsaltedChoiceHash == paperHash ||
+                unsaltedChoiceHash == scissorsHash,
+            "Invalid choice. Please select 'rock', 'paper' or 'scissors'"
+        );
+
         // Get the game hash from active game mapping
         address gameHash = activeGame[msg.sender];
 
@@ -177,14 +173,8 @@ contract RockPaperScissors {
 
         // Verify that one of the choices + salt hashes matches commit hash
         // Compare all three possible choices so they don't have to enter their choice again
-        bytes32 verificationHashRock = keccak256(
-            abi.encodePacked("rock", salt)
-        );
-        bytes32 verificationHashPaper = keccak256(
-            abi.encodePacked("paper", salt)
-        );
-        bytes32 verificationHashScissors = keccak256(
-            abi.encodePacked("scissors", salt)
+        bytes32 verificationHash = keccak256(
+            abi.encodePacked(choice, salt)
         );
 
         bytes32 commitHash = isPlayer1
@@ -192,21 +182,9 @@ contract RockPaperScissors {
             : games[gameHash].commit2;
 
         require(
-            verificationHashRock == commitHash ||
-                verificationHashPaper == commitHash ||
-                verificationHashScissors == commitHash,
-            "Reveal hash doesn't match commit hash. Salt not the same as commit."
+            verificationHash == commitHash,
+            "Verification hash doesn't match commit hash. Salt and/or choice not the same as commit."
         );
-
-        // Work backwards to infer their choice
-        string memory choice;
-        if (verificationHashRock == commitHash) {
-            choice = "rock";
-        } else if (verificationHashPaper == commitHash) {
-            choice = "paper";
-        } else {
-            choice = "scissors";
-        }
 
         // Save the revealed hash w/o salt
         if (isPlayer1) {
